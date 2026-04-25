@@ -1,0 +1,10 @@
+{
+  "run_type": "smoke_run_reference",
+  "episodes": 30,
+  "latest_reward": 71.74,
+  "latest_pass_rate": 1.0,
+  "tail_avg_reward": 73.22125,
+  "tail_avg_pass_rate": 1.0,
+  "setter_win_rate": 0.0,
+  "note": "This committed summary is derived from training_history.json. Run scripts/train.py --publish-root-artifacts to replace it with a real GRPO summary."
+}

@@ -190,8 +190,8 @@
             <div class="eyebrow">OpenEnv Docker Space</div>
             <h1>CodeCourt</h1>
             <p>
-                LLMs rarely fail on familiar coding prompts. They fail when hidden edge cases and vulnerabilities expose brittle reasoning.
-                CodeCourt is an Adversarial Code Auditing Environment built around that failure mode, forcing the Blue Team Solver to improve via reward shaping and GRPO.
+                Static coding benchmarks are easy to memorize. CodeCourt replaces them with seeded, adversarial tasks that expose brittle reasoning under hidden tests.
+                The proof is not one lucky sample. It is a learning story: failure first, reward movement during training, and a concrete boundary-condition capability that improves afterward.
             </p>
             <div class="story-strip">
                 <div class="story-card">
@@ -573,6 +573,21 @@
                             <div>Trained reward: ${data.evaluation_summary?.trained_reward == null ? "n/a" : data.evaluation_summary.trained_reward.toFixed(2)}</div>
                         </div>
                         <div class="muted">Robustness metric: ${data.evaluation_summary?.trained_robustness == null ? "n/a" : data.evaluation_summary.trained_robustness.toFixed(2)}</div>
+                    </div>
+                    <div class="list-item">
+                        <h3>Capability Probe</h3>
+                        ${data.capability_eval ? `
+                            <div class="split">
+                                <div>Suite: ${data.capability_eval.summary.suite_name}</div>
+                                <div>Baseline: ${fmtPct(data.capability_eval.summary.baseline_pass_rate)}</div>
+                                <div>Trained: ${fmtPct(data.capability_eval.summary.trained_pass_rate)}</div>
+                                <div>Improved cases: ${data.capability_eval.summary.improved_case_count}</div>
+                            </div>
+                            <div class="muted">${data.capability_eval.summary.claim}</div>
+                            <div class="muted">${data.capability_eval.summary.improved_cases.length ? data.capability_eval.summary.improved_cases.map(item => item.case_id).join(", ") : "No improved cases recorded yet."}</div>
+                        ` : `
+                            <div>No boundary-condition capability probe committed yet.</div>
+                        `}
                     </div>
                     <div class="list-item">
                         <h3>Manifest</h3>

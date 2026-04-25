@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -50,6 +51,11 @@ def parse_args():
     parser.add_argument("--baseline-path", type=str, default="./outputs/baseline_results.json")
     parser.add_argument("--plots-dir", type=str, default="./outputs/plots")
     parser.add_argument("--skip-plots", action="store_true")
+    parser.add_argument(
+        "--publish-root-artifacts",
+        action="store_true",
+        help="Copy the latest GRPO logs/summaries into ./outputs/ so the dashboard reads the real run directly",
+    )
     return parser.parse_args()
 
 
@@ -187,6 +193,57 @@ def maybe_generate_plots(args, output_dir: Path):
         generate_reports(None, trained_path, Path(args.plots_dir))
 
 
+def publish_root_artifacts(args, output_dir: Path, training_summary: dict):
+    root_outputs = Path("./outputs")
+    root_outputs.mkdir(parents=True, exist_ok=True)
+
+    training_log_src = output_dir / "training_log_history.json"
+    training_summary_src = output_dir / "training_summary.json"
+    training_manifest_src = output_dir / "training_manifest.json"
+    root_training_log = root_outputs / "training_history.json"
+    root_training_summary = root_outputs / "training_summary.json"
+    root_manifest_path = root_outputs / "artifact_manifest.json"
+    evaluation_summary_path = Path(args.plots_dir) / "evaluation_summary.json"
+
+    if training_log_src.exists():
+        shutil.copyfile(training_log_src, root_training_log)
+    if training_summary_src.exists():
+        shutil.copyfile(training_summary_src, root_training_summary)
+
+    merged_manifest = {}
+    if root_manifest_path.exists():
+        try:
+            merged_manifest = json.loads(root_manifest_path.read_text())
+        except json.JSONDecodeError:
+            merged_manifest = {}
+
+    training_config = {}
+    if training_manifest_src.exists():
+        try:
+            training_config = json.loads(training_manifest_src.read_text())
+        except json.JSONDecodeError:
+            training_config = {}
+
+    merged_manifest.update({
+        "artifacts_version": 2,
+        "project": "CodeCourt",
+        "generated_for": "OpenEnv Docker Space proof package",
+        "training_run": {
+            "path": "./outputs/training_history.json",
+            "source_dir": str(output_dir),
+            "run_type": "real_grpo",
+            "config": training_config,
+            "summary": training_summary,
+        },
+    })
+    if evaluation_summary_path.exists():
+        merged_manifest["evaluation_summary"] = {
+            "path": str(evaluation_summary_path),
+        }
+    merged_manifest["plots"] = sorted(str(path) for path in Path(args.plots_dir).glob("*"))
+    root_manifest_path.write_text(json.dumps(merged_manifest, indent=2))
+
+
 def main():
     load_dotenv()
     args = parse_args()
@@ -243,6 +300,8 @@ def main():
     training_summary = save_training_summary(trainer, output_dir)
     save_artifact_manifest(output_dir, args, dataset_rows, training_summary)
     maybe_generate_plots(args, output_dir)
+    if args.publish_root_artifacts:
+        publish_root_artifacts(args, output_dir, training_summary)
 
     print(f"Saved trained solver artifacts to {output_dir / 'final_model'}")
 

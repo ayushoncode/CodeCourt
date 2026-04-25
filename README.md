@@ -19,6 +19,10 @@ LLMs do not usually fail on the problems they have already memorized. They fail 
 
 ## 🎯 The Story
 
+### 30-Second Pitch
+
+Every coding benchmark has the same flaw: the model may have seen the problems during pretraining. CodeCourt fixes that by having one agent generate seeded, adversarial tasks designed to expose the other agent's weaknesses. The Solver gets reward when it survives hidden tests. The environment gets harder when shortcut reasoning breaks. The win condition is not a cherry-picked sample output. It is a visible learning story: failure at the start, reward movement during training, and a concrete capability that improves afterward.
+
 Most coding benchmarks are static. Public tasks are visible, patterns repeat, and models can look strong through memorization. But infrastructure isn't static. Real coding robustness appears when:
 
 - test cases are hidden
@@ -161,17 +165,18 @@ This is your **before training** snapshot:
 python scripts/train.py \
     --model Qwen/Qwen2.5-0.5B-Instruct \
     --train-samples 54 \
-    --max-steps 30
+    --max-steps 100 \
+    --publish-root-artifacts
 ```
 
-This performs real GRPO optimization using the Oracle sandbox as the reward source.
+This performs real GRPO optimization using the Oracle sandbox as the reward source and publishes the latest run back into `./outputs/` so the dashboard reads the real curve instead of the smoke-run placeholder.
 
 ### 3. Generate Training Proof
 
 ```bash
 python scripts/evaluate.py \
     --baseline ./outputs/baseline_results.json \
-    --trained ./outputs/grpo_solver/training_log_history.json \
+    --trained ./outputs/training_history.json \
     --output ./outputs/plots/
 ```
 
@@ -181,7 +186,14 @@ This generates:
 - `before_after.png`
 - `evaluation_summary.json`
 
-### 4. Launch the Demo
+### 4. Probe One Concrete Capability
+
+```bash
+python scripts/boundary_eval.py
+```
+
+This writes `outputs/capability_boundary_eval.json`, a small judge-friendly probe for boundary-condition handling.
+### 5. Launch the Demo
 
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 7860
@@ -191,7 +203,7 @@ Then open `http://127.0.0.1:7860`.
 
 Dashboard source lives at [dashboard/index.html](dashboard/index.html).
 
-### 5. Deploy to Hugging Face Spaces
+### 6. Deploy to Hugging Face Spaces
 
 ```bash
 python scripts/deploy_space.py --space-id your-username/codecourt
@@ -202,15 +214,18 @@ python scripts/deploy_space.py --space-id your-username/codecourt
 CodeCourt is designed to produce explicit evidence of improvement:
 
 1. `baseline_results.json` captures the weak starting policy.
-2. `training_log_history.json` tracks reward and pass rate over GRPO steps.
-3. `training_summary.json` summarizes the final training state.
+2. `training_history.json` can mirror a real GRPO run when published from `scripts/train.py --publish-root-artifacts`.
+3. `training_summary.json` summarizes the latest GRPO run when available.
 4. `evaluation_summary.json` compares baseline vs trained behavior.
-5. Plot artifacts visualize reward curves and before-vs-after gains.
+5. `capability_boundary_eval.json` proves one concrete before/after capability.
+6. Plot artifacts visualize reward curves and before-vs-after gains.
 
 Committed artifacts:
 
 - [outputs/baseline_results.json](outputs/baseline_results.json)
 - [outputs/training_history.json](outputs/training_history.json)
+- [outputs/training_summary.json](outputs/training_summary.json)
+- [outputs/capability_boundary_eval.json](outputs/capability_boundary_eval.json)
 - [outputs/plots/evaluation_summary.json](outputs/plots/evaluation_summary.json)
 - [outputs/plots/training_curves.png](outputs/plots/training_curves.png)
 - [outputs/plots/before_after.png](outputs/plots/before_after.png)
@@ -230,7 +245,29 @@ Notes:
 
 - These numbers are real and come from the committed outputs in `outputs/`.
 - The current comparison artifact uses a `30`-episode self-play smoke run (`training_history.json`) to prove the loop end-to-end.
-- Full GRPO log artifacts remain the next upgrade, but the baseline/evaluation story is now inspectable without rerunning the repo.
+- The intended upgrade path is now built in: `scripts/train.py --publish-root-artifacts` replaces the smoke-run proof package with a real GRPO log and summary.
+
+## 🎯 One Concrete Capability
+
+We now ship a focused boundary-condition probe at [outputs/capability_boundary_eval.json](outputs/capability_boundary_eval.json).
+
+Current committed comparison (`brute_force` vs `reference` on 6 curated cases):
+
+| Capability Slice | Baseline | Stronger Solver |
+|------------------|----------|-----------------|
+| Boundary-condition pass rate | 16.7% | 100.0% |
+| Improved cases | 1 / 6 | 6 / 6 |
+| Net improvement | - | +5 cases |
+
+Improved examples:
+
+- `graph_shortest_path_single_node`
+- `graph_shortest_path_two_hop`
+- `graph_bipartite_min_odd_cycle`
+- `array_lis_hidden_valley`
+- `dp_lcs_order_sensitive`
+
+This is the storytelling hook we want judges to remember: the weak solver fails on tiny but adversarial edge transitions, while the stronger solver clears the entire curated suite.
 
 That is the winning story: **failure, intervention, measurable improvement**.
 

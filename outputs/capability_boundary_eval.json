@@ -1,0 +1,230 @@
+{
+  "summary": {
+    "suite_name": "boundary_conditions",
+    "claim": "The solver improves on small, adversarial boundary cases that break shortcut reasoning.",
+    "baseline_mode": "brute_force",
+    "trained_mode": "reference",
+    "baseline_pass_rate": 0.16666666666666666,
+    "trained_pass_rate": 1.0,
+    "pass_rate_delta": 0.8333333333333334,
+    "baseline_passed_cases": 1,
+    "trained_passed_cases": 6,
+    "improved_case_count": 5,
+    "improved_cases": [
+      {
+        "case_id": "graph_shortest_path_single_node",
+        "description": "Shortest-path solver must handle the smallest graph where source equals destination.",
+        "archetype": "graph",
+        "task_id": 0
+      },
+      {
+        "case_id": "graph_shortest_path_two_hop",
+        "description": "Shortest-path solver must reason beyond direct neighbors.",
+        "archetype": "graph",
+        "task_id": 0
+      },
+      {
+        "case_id": "graph_bipartite_min_odd_cycle",
+        "description": "Bipartite check must reject the smallest odd cycle.",
+        "archetype": "graph",
+        "task_id": 1
+      },
+      {
+        "case_id": "array_lis_hidden_valley",
+        "description": "LIS must recover after an early overshoot instead of greedily locking in.",
+        "archetype": "array",
+        "task_id": 2
+      },
+      {
+        "case_id": "dp_lcs_order_sensitive",
+        "description": "LCS must respect order, not just character overlap.",
+        "archetype": "dp",
+        "task_id": 2
+      }
+    ]
+  },
+  "baseline": {
+    "mode": "brute_force",
+    "total_cases": 6,
+    "passed_cases": 1,
+    "pass_rate": 0.16666666666666666,
+    "cases": [
+      {
+        "case_id": "graph_shortest_path_single_node",
+        "capability": "boundary_conditions",
+        "archetype": "graph",
+        "task_id": 0,
+        "description": "Shortest-path solver must handle the smallest graph where source equals destination.",
+        "passed": false,
+        "status": "fail",
+        "outcome": "setter_wins",
+        "stdout": "-1",
+        "stderr": "",
+        "expected_output": "0",
+        "execution_time": 0.03035593032836914
+      },
+      {
+        "case_id": "graph_shortest_path_two_hop",
+        "capability": "boundary_conditions",
+        "archetype": "graph",
+        "task_id": 0,
+        "description": "Shortest-path solver must reason beyond direct neighbors.",
+        "passed": false,
+        "status": "fail",
+        "outcome": "setter_wins",
+        "stdout": "-1",
+        "stderr": "",
+        "expected_output": "9",
+        "execution_time": 0.023676156997680664
+      },
+      {
+        "case_id": "graph_bipartite_min_odd_cycle",
+        "capability": "boundary_conditions",
+        "archetype": "graph",
+        "task_id": 1,
+        "description": "Bipartite check must reject the smallest odd cycle.",
+        "passed": false,
+        "status": "fail",
+        "outcome": "setter_wins",
+        "stdout": "YES",
+        "stderr": "",
+        "expected_output": "NO",
+        "execution_time": 0.02356886863708496
+      },
+      {
+        "case_id": "array_lis_hidden_valley",
+        "capability": "boundary_conditions",
+        "archetype": "array",
+        "task_id": 2,
+        "description": "LIS must recover after an early overshoot instead of greedily locking in.",
+        "passed": false,
+        "status": "fail",
+        "outcome": "setter_wins",
+        "stdout": "2",
+        "stderr": "",
+        "expected_output": "3",
+        "execution_time": 0.023280858993530273
+      },
+      {
+        "case_id": "dp_lcs_order_sensitive",
+        "capability": "boundary_conditions",
+        "archetype": "dp",
+        "task_id": 2,
+        "description": "LCS must respect order, not just character overlap.",
+        "passed": false,
+        "status": "fail",
+        "outcome": "setter_wins",
+        "stdout": "2",
+        "stderr": "",
+        "expected_output": "1",
+        "execution_time": 0.023756742477416992
+      },
+      {
+        "case_id": "dp_lcs_repeated_chars",
+        "capability": "boundary_conditions",
+        "archetype": "dp",
+        "task_id": 2,
+        "description": "LCS must count a subsequence rather than raw character membership.",
+        "passed": true,
+        "status": "pass",
+        "outcome": "solver_wins",
+        "stdout": "2",
+        "stderr": "",
+        "expected_output": "2",
+        "execution_time": 0.02333688735961914
+      }
+    ]
+  },
+  "trained": {
+    "mode": "reference",
+    "total_cases": 6,
+    "passed_cases": 6,
+    "pass_rate": 1.0,
+    "cases": [
+      {
+        "case_id": "graph_shortest_path_single_node",
+        "capability": "boundary_conditions",
+        "archetype": "graph",
+        "task_id": 0,
+        "description": "Shortest-path solver must handle the smallest graph where source equals destination.",
+        "passed": true,
+        "status": "pass",
+        "outcome": "solver_wins",
+        "stdout": "0",
+        "stderr": "",
+        "expected_output": "0",
+        "execution_time": 0.024199962615966797
+      },
+      {
+        "case_id": "graph_shortest_path_two_hop",
+        "capability": "boundary_conditions",
+        "archetype": "graph",
+        "task_id": 0,
+        "description": "Shortest-path solver must reason beyond direct neighbors.",
+        "passed": true,
+        "status": "pass",
+        "outcome": "solver_wins",
+        "stdout": "9",
+        "stderr": "",
+        "expected_output": "9",
+        "execution_time": 0.024346113204956055
+      },
+      {
+        "case_id": "graph_bipartite_min_odd_cycle",
+        "capability": "boundary_conditions",
+        "archetype": "graph",
+        "task_id": 1,
+        "description": "Bipartite check must reject the smallest odd cycle.",
+        "passed": true,
+        "status": "pass",
+        "outcome": "solver_wins",
+        "stdout": "NO",
+        "stderr": "",
+        "expected_output": "NO",
+        "execution_time": 0.027395248413085938
+      },
+      {
+        "case_id": "array_lis_hidden_valley",
+        "capability": "boundary_conditions",
+        "archetype": "array",
+        "task_id": 2,
+        "description": "LIS must recover after an early overshoot instead of greedily locking in.",
+        "passed": true,
+        "status": "pass",
+        "outcome": "solver_wins",
+        "stdout": "3",
+        "stderr": "",
+        "expected_output": "3",
+        "execution_time": 0.02493000030517578
+      },
+      {
+        "case_id": "dp_lcs_order_sensitive",
+        "capability": "boundary_conditions",
+        "archetype": "dp",
+        "task_id": 2,
+        "description": "LCS must respect order, not just character overlap.",
+        "passed": true,
+        "status": "pass",
+        "outcome": "solver_wins",
+        "stdout": "1",
+        "stderr": "",
+        "expected_output": "1",
+        "execution_time": 0.02306675910949707
+      },
+      {
+        "case_id": "dp_lcs_repeated_chars",
+        "capability": "boundary_conditions",
+        "archetype": "dp",
+        "task_id": 2,
+        "description": "LCS must count a subsequence rather than raw character membership.",
+        "passed": true,
+        "status": "pass",
+        "outcome": "solver_wins",
+        "stdout": "2",
+        "stderr": "",
+        "expected_output": "2",
+        "execution_time": 0.023571014404296875
+      }
+    ]
+  }
+}

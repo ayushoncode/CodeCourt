@@ -8,6 +8,8 @@ outputs/*
 !outputs/artifact_manifest.json
 !outputs/baseline_results.json
 !outputs/training_history.json
+!outputs/training_summary.json
+!outputs/capability_boundary_eval.json
 !outputs/plots/
 outputs/plots/*
 !outputs/plots/evaluation_summary.json

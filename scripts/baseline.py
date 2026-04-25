@@ -9,12 +9,25 @@ Usage:
 import sys
 import os
 import json
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from env.codecourt_env import CodeCourtEnv
 from agents.setter import SetterAgent
 from agents.solver import SolverAgent
+
+
+def update_root_manifest(baseline_payload: dict):
+    manifest_path = Path("./outputs/artifact_manifest.json")
+    manifest = {}
+    if manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text())
+        except json.JSONDecodeError:
+            manifest = {}
+    manifest["baseline"] = baseline_payload
+    manifest_path.write_text(json.dumps(manifest, indent=2))
 
 
 def run_baseline(n_episodes: int = 50, use_brute_force: bool = True):
@@ -71,17 +84,10 @@ def run_baseline(n_episodes: int = 50, use_brute_force: bool = True):
     os.makedirs("./outputs", exist_ok=True)
     with open("./outputs/baseline_results.json", "w") as f:
         json.dump({"summary": summary, "episodes": results}, f, indent=2)
-    with open("./outputs/artifact_manifest.json", "w") as f:
-        json.dump(
-            {
-                "baseline": {
-                    "path": "./outputs/baseline_results.json",
-                    "summary": summary,
-                }
-            },
-            f,
-            indent=2,
-        )
+    update_root_manifest({
+        "path": "./outputs/baseline_results.json",
+        "summary": summary,
+    })
 
     print("\n✓ Baseline saved to ./outputs/baseline_results.json")
     return summary

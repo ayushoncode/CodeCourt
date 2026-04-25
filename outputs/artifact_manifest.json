@@ -38,12 +38,23 @@
       "trained_setter_win_rate": 0.0
     }
   },
+  "capability_probe": {
+    "path": "./outputs/capability_boundary_eval.json",
+    "summary": {
+      "suite_name": "boundary_conditions",
+      "baseline_pass_rate": 0.16666666666666666,
+      "trained_pass_rate": 1.0,
+      "pass_rate_delta": 0.8333333333333334,
+      "improved_case_count": 5
+    }
+  },
   "plots": [
     "./outputs/plots/training_curves.png",
     "./outputs/plots/before_after.png"
   ],
   "notes": [
     "The trained-side comparison currently uses the committed training_history.json smoke run, not a full GRPO checkpoint log.",
+    "Run scripts/train.py with --publish-root-artifacts to replace the smoke-run proof package with a real GRPO run.",
     "Dashboard artifact status and README links are intended to match these committed files exactly."
   ]
 }

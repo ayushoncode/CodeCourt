@@ -306,6 +306,8 @@ def _build_artifacts() -> dict:
     baseline_path = OUTPUTS_DIR / "baseline_results.json"
     training_log_path = OUTPUTS_DIR / "training_history.json"
     manifest_path = OUTPUTS_DIR / "artifact_manifest.json"
+    training_summary_path = OUTPUTS_DIR / "training_summary.json"
+    capability_eval_path = OUTPUTS_DIR / "capability_boundary_eval.json"
     plots_dir = OUTPUTS_DIR / "plots"
     evaluation_summary_path = plots_dir / "evaluation_summary.json"
 
@@ -313,7 +315,10 @@ def _build_artifacts() -> dict:
     training_log = _read_json_if_exists(training_log_path)
     manifest = _read_json_if_exists(manifest_path)
     evaluation_summary = _read_json_if_exists(evaluation_summary_path)
-    training_summary = evaluation_summary if isinstance(evaluation_summary, dict) else None
+    training_summary = _read_json_if_exists(training_summary_path)
+    if training_summary is None and isinstance(evaluation_summary, dict):
+        training_summary = evaluation_summary
+    capability_eval = _read_json_if_exists(capability_eval_path)
 
     latest_reward = None
     latest_pass_rate = None
@@ -334,6 +339,7 @@ def _build_artifacts() -> dict:
         "training_manifest": manifest,
         "training_summary": training_summary,
         "evaluation_summary": evaluation_summary,
+        "capability_eval": capability_eval,
         "latest_training_metrics": {
             "reward": latest_reward,
             "reward_pass_rate": latest_pass_rate,
