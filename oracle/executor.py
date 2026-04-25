@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import io
 import os
+import platform
+import resource
 import tarfile
 import tempfile
 import time
 import subprocess
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional
 
 try:
@@ -29,7 +30,7 @@ LANGUAGE_CONFIG = {
     "python": {
         "image": "python:3.11-alpine",
         "source_name": "main.py",
-        "run_cmd": ["sh", "-lc", "python /workspace/main.py < /workspace/stdin.txt"],
+        "run_cmd": ["sh", "-lc", "python3 /workspace/main.py < /workspace/stdin.txt"],
         "compile_cmd": None,
     },
     "cpp": {
@@ -85,11 +86,13 @@ class OracleExecutor:
 
     def _get_client(self):
         if docker is None:
-            raise RuntimeError(
-                "docker Python package is not installed. Add `docker` to requirements and install it."
-            )
+            return None
         if self._client is None:
-            self._client = docker.from_env()
+            try:
+                self._client = docker.from_env()
+                self._client.ping()
+            except DockerException:
+                self._client = None
         return self._client
 
     def _validate_language(self, language: str) -> dict:
@@ -136,11 +139,18 @@ class OracleExecutor:
             return "pass", "solver_wins"
         return "fail", "setter_wins"
 
+    def _set_local_limits(self):
+        if platform.system() == "Darwin":
+            return
+        mem_bytes = self.memory_limit_mb * 1024 * 1024
+        resource.setrlimit(resource.RLIMIT_AS, (mem_bytes, mem_bytes))
+        resource.setrlimit(resource.RLIMIT_CPU, (int(self.time_limit) + 1, int(self.time_limit) + 1))
+
     def _run_local(self, command: list[str], files: dict[str, str]) -> tuple[int, str, str, float, float, bool]:
         start = time.time()
         with tempfile.TemporaryDirectory() as tmpdir:
             for filename, content in files.items():
-                with open(os.path.join(tmpdir, filename), "w") as f:
+                with open(os.path.join(tmpdir, filename), "w", encoding="utf-8") as f:
                     f.write(content)
             
             cmd_str = command[2].replace("/workspace", tmpdir)
@@ -151,10 +161,14 @@ class OracleExecutor:
                     cwd=tmpdir,
                     capture_output=True,
                     timeout=max(self.time_limit + 0.5, 1.0),
-                    text=True
+                    text=True,
+                    preexec_fn=None if platform.system() == "Darwin" else self._set_local_limits,
                 )
                 elapsed = time.time() - start
-                return res.returncode, res.stdout.strip(), res.stderr.strip(), elapsed, 10.0, False
+                stderr = res.stderr.strip()
+                if res.returncode != 0 and not stderr:
+                    stderr = f"Exit code: {res.returncode}"
+                return res.returncode, res.stdout.strip(), stderr, elapsed, 10.0, False
             except subprocess.TimeoutExpired as e:
                 elapsed = time.time() - start
                 stdout = e.stdout if isinstance(e.stdout, str) else (e.stdout.decode() if e.stdout else "")
@@ -162,7 +176,7 @@ class OracleExecutor:
                 return 124, stdout.strip(), stderr.strip(), elapsed, 10.0, True
 
     def _run_container(self, image: str, command: list[str], files: dict[str, str]) -> tuple[int, str, str, float, float, bool]:
-        if "SPACE_ID" in os.environ:
+        if "SPACE_ID" in os.environ or self._get_client() is None:
             return self._run_local(command, files)
 
         client = self._get_client()

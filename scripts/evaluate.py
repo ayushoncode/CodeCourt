@@ -15,6 +15,8 @@ import json
 import argparse
 from pathlib import Path
 
+os.environ.setdefault("MPLBACKEND", "Agg")
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -259,12 +261,33 @@ def plot_before_after(baseline: dict, trained_history: list, output_dir: str):
 
 def build_evaluation_summary(baseline: dict | None, trained_history: list) -> dict:
     log_records = [row for row in trained_history if isinstance(row, dict) and "step" in row]
-    final_record = log_records[-1] if log_records else {}
     baseline_summary = (baseline or {}).get("summary", baseline or {})
     baseline_pass = baseline_summary.get("avg_solver_pass_rate")
-    trained_pass = final_record.get("reward_pass_rate")
     baseline_reward = baseline_summary.get("avg_solver_reward")
-    trained_reward = final_record.get("reward")
+
+    if log_records:
+        final_record = log_records[-1]
+        trained_pass = final_record.get("reward_pass_rate")
+        trained_reward = final_record.get("reward")
+        trained_robustness = final_record.get("reward_robustness")
+        setter_win_rate = None
+    else:
+        episodes = [row for row in trained_history if isinstance(row, dict) and "episode" in row]
+        tail = episodes[len(episodes) * 3 // 4:] if episodes else []
+        trained_pass = (
+            sum(row.get("solver_pass_rate", 0) for row in tail) / max(len(tail), 1)
+            if tail else None
+        )
+        trained_reward = (
+            sum(row.get("solver_reward", 0) for row in tail) / max(len(tail), 1)
+            if tail else None
+        )
+        trained_robustness = None
+        setter_win_rate = (
+            sum(1 for row in tail if row.get("outcome") == "setter_wins") / max(len(tail), 1)
+            if tail else None
+        )
+
     return {
         "baseline_pass_rate": baseline_pass,
         "trained_pass_rate": trained_pass,
@@ -272,7 +295,8 @@ def build_evaluation_summary(baseline: dict | None, trained_history: list) -> di
         "baseline_reward": baseline_reward,
         "trained_reward": trained_reward,
         "reward_delta": (trained_reward - baseline_reward) if baseline_reward is not None and trained_reward is not None else None,
-        "trained_robustness": final_record.get("reward_robustness"),
+        "trained_robustness": trained_robustness,
+        "trained_setter_win_rate": setter_win_rate,
     }
 
 

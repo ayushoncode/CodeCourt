@@ -1,0 +1,253 @@
+{
+  "summary": {
+    "total_episodes": 30,
+    "solver_mode": "brute_force",
+    "solver_win_rate": 0.43333333333333335,
+    "setter_win_rate": 0.5666666666666667,
+    "invalid_rate": 0.0,
+    "avg_solver_pass_rate": 0.5472222222222223,
+    "avg_solver_reward": 24.762
+  },
+  "episodes": [
+    {
+      "episode": 0,
+      "archetype": "dp",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 75.73,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 1,
+      "archetype": "dp",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -10.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 2,
+      "archetype": "array",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 61.739999999999995,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 3,
+      "archetype": "array",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 61.68000000000001,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 4,
+      "archetype": "dp",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 75.72,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 5,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 65.0,
+      "solver_reward": -16.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 6,
+      "archetype": "array",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 61.71000000000001,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 7,
+      "archetype": "dp",
+      "outcome": "setter_wins",
+      "setter_reward": 65.0,
+      "solver_reward": -16.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 8,
+      "archetype": "dp",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 75.74,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 9,
+      "archetype": "dp",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": 0.0,
+      "solver_pass_rate": 0.5
+    },
+    {
+      "episode": 10,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -10.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 11,
+      "archetype": "dp",
+      "outcome": "setter_wins",
+      "setter_reward": 65.0,
+      "solver_reward": -11.0,
+      "solver_pass_rate": 0.25
+    },
+    {
+      "episode": 12,
+      "archetype": "array",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 61.739999999999995,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 13,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 65.0,
+      "solver_reward": -2.6999999999999993,
+      "solver_pass_rate": 0.6666666666666666
+    },
+    {
+      "episode": 14,
+      "archetype": "array",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 61.72,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 15,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -10.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 16,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -3.3,
+      "solver_pass_rate": 0.3333333333333333
+    },
+    {
+      "episode": 17,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 65.0,
+      "solver_reward": -16.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 18,
+      "archetype": "array",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 61.72,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 19,
+      "archetype": "dp",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 75.74,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 20,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -3.3,
+      "solver_pass_rate": 0.3333333333333333
+    },
+    {
+      "episode": 21,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -10.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 22,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -10.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 23,
+      "archetype": "dp",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 75.74,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 24,
+      "archetype": "dp",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 75.74,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 25,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -3.3,
+      "solver_pass_rate": 0.3333333333333333
+    },
+    {
+      "episode": 26,
+      "archetype": "array",
+      "outcome": "solver_wins",
+      "setter_reward": -5.0,
+      "solver_reward": 61.739999999999995,
+      "solver_pass_rate": 1.0
+    },
+    {
+      "episode": 27,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 65.0,
+      "solver_reward": -2.6999999999999993,
+      "solver_pass_rate": 0.6666666666666666
+    },
+    {
+      "episode": 28,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 55.0,
+      "solver_reward": -10.0,
+      "solver_pass_rate": 0.0
+    },
+    {
+      "episode": 29,
+      "archetype": "graph",
+      "outcome": "setter_wins",
+      "setter_reward": 65.0,
+      "solver_reward": -9.3,
+      "solver_pass_rate": 0.3333333333333333
+    }
+  ]
+}

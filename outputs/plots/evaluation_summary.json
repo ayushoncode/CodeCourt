@@ -1,0 +1,10 @@
+{
+  "baseline_pass_rate": 0.5472222222222223,
+  "trained_pass_rate": 1.0,
+  "pass_rate_delta": 0.4527777777777777,
+  "baseline_reward": 24.762,
+  "trained_reward": 73.22125,
+  "reward_delta": 48.45925,
+  "trained_robustness": null,
+  "trained_setter_win_rate": 0.0
+}

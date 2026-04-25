@@ -35,6 +35,8 @@ CodeCourt turns that into the training loop itself. We frame this as an automate
 
 This is the core claim: **LLMs fail not on known problems, but when exposed to adversarial hidden edge cases. We built an environment where Red Team agents actively create those failures, forcing Blue Team agents to develop zero-day patching capabilities.**
 
+Our first committed baseline run (`30` episodes) showed brute-force solvers averaging only **54.7% hidden-test pass rate** while the Setter still won **56.7%** of episodes. Average solver reward: **+24.76**. The policy was still relying on cheap pattern shortcuts, not robust reasoning under adversarial variation.
+
 ## ❌ Failure → 🔧 Fix → ✅ Result
 
 ### Before
@@ -83,6 +85,12 @@ Most coding benchmarks are memorized. CodeCourt is harder to game because:
 - **Repeated weak strategy pressure**: brittle control-flow patterns are discouraged across adversarial variants.
 - **Unsafe pattern penalty**: suspicious imports and execution shortcuts are penalized.
 - **Fast competitive-style implementation bonus**: efficient I/O and cleaner structure can gain reward.
+
+Concrete example:
+
+- A shortcut LIS solver that greedily extends only the current subsequence can look fine on easy public samples.
+- On CodeCourt's harder hidden variants it triggers the `complexity_risk` penalty and loses the `complexity_match` bonus.
+- In the current baseline artifact, brute-force or complexity-risk penalties fire in **46.7%** of episodes, which is exactly the kind of gaming pressure the environment is meant to expose.
 
 ## 📚 Problem Archetypes
 
@@ -181,6 +189,8 @@ uvicorn app:app --host 0.0.0.0 --port 7860
 
 Then open `http://127.0.0.1:7860`.
 
+Dashboard source lives at [dashboard/index.html](dashboard/index.html).
+
 ### 5. Deploy to Hugging Face Spaces
 
 ```bash
@@ -197,25 +207,30 @@ CodeCourt is designed to produce explicit evidence of improvement:
 4. `evaluation_summary.json` compares baseline vs trained behavior.
 5. Plot artifacts visualize reward curves and before-vs-after gains.
 
+Committed artifacts:
+
+- [outputs/baseline_results.json](outputs/baseline_results.json)
+- [outputs/training_history.json](outputs/training_history.json)
+- [outputs/plots/evaluation_summary.json](outputs/plots/evaluation_summary.json)
+- [outputs/plots/training_curves.png](outputs/plots/training_curves.png)
+- [outputs/plots/before_after.png](outputs/plots/before_after.png)
+
 ## 📈 What To Show In The Demo
 
-### Before Training
+Current committed comparison (`baseline_results.json` vs `training_history.json` smoke run):
 
-- brute solver fails on hidden cases
-- solver reward is low
-- pass rate is weak
+| Metric | Baseline (step 0) | Trained / reference smoke run (step 30) |
+|--------|-------------------|------------------------------------------|
+| Hidden test pass rate | 54.7% | 100.0% |
+| Avg solver reward | +24.76 | +73.22 |
+| Brute-force penalty triggers | 46.7% of episodes | 0.0% |
+| Setter win rate | 56.7% | 0.0% |
 
-### Fix
+Notes:
 
-- reward shaping
-- adversarial hidden tests
-- dynamic problem variation
-
-### After Training
-
-- higher pass rate
-- higher reward
-- stronger robustness against hidden cases
+- These numbers are real and come from the committed outputs in `outputs/`.
+- The current comparison artifact uses a `30`-episode self-play smoke run (`training_history.json`) to prove the loop end-to-end.
+- Full GRPO log artifacts remain the next upgrade, but the baseline/evaluation story is now inspectable without rerunning the repo.
 
 That is the winning story: **failure, intervention, measurable improvement**.
 

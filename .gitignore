@@ -4,8 +4,15 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .coverage
-outputs/
+outputs/*
+!outputs/artifact_manifest.json
+!outputs/baseline_results.json
+!outputs/training_history.json
+!outputs/plots/
+outputs/plots/*
+!outputs/plots/evaluation_summary.json
+!outputs/plots/training_curves.png
+!outputs/plots/before_after.png
 dist/
 build/
 .DS_Store
-

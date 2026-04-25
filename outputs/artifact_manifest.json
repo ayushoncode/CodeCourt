@@ -1,0 +1,14 @@
+{
+  "baseline": {
+    "path": "./outputs/baseline_results.json",
+    "summary": {
+      "total_episodes": 30,
+      "solver_mode": "brute_force",
+      "solver_win_rate": 0.43333333333333335,
+      "setter_win_rate": 0.5666666666666667,
+      "invalid_rate": 0.0,
+      "avg_solver_pass_rate": 0.5472222222222223,
+      "avg_solver_reward": 24.762
+    }
+  }
+}
