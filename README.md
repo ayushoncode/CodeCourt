@@ -234,12 +234,18 @@ Committed artifacts:
 
 Current committed comparison (`baseline_results.json` vs `training_history.json` smoke run):
 
-| Metric | Baseline (step 0) | Trained / reference smoke run (step 30) |
-|--------|-------------------|------------------------------------------|
-| Hidden test pass rate | 54.7% | 100.0% |
-| Avg solver reward | +24.76 | +73.22 |
-| Brute-force penalty triggers | 46.7% of episodes | 0.0% |
-| Setter win rate | 56.7% | 0.0% |
+| Metric | Baseline (step 0) | Trained (25 steps, T4 GPU) |
+|--------|-------------------|---------------------------|
+| Avg solver reward (start) | +24.76 (smoke run) | -12.625 (real GRPO step 1) |
+| Best reward seen | — | -12.375 |
+| Training time | — | 7m 33s on T4 |
+| Steps completed | — | 25/25 ✅ |
+| Artifacts | smoke run | real GRPO run ✅ |
+
+> **Note:** This is a real GRPO training run on T4 GPU. Reward is negative because
+> the model generates truncated outputs (256 token limit) — the environment
+> correctly penalizes incomplete solutions. Extending `max_completion_length`
+> to 512+ is the next training upgrade.
 
 Notes:
 
