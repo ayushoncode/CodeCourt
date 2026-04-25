@@ -1,0 +1,11 @@
+.env
+.env.local
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+outputs/
+dist/
+build/
+.DS_Store
+

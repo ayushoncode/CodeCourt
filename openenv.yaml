@@ -1,0 +1,58 @@
+# OpenEnv Specification for CodeCourt
+# https://github.com/hpcaitech/OpenEnv
+
+name: codecourt-v1
+version: 1.0.0
+description: Adversarial Curriculum Arena for LLM Code Generation
+
+environment:
+  type: competitive
+  agents:
+    - name: setter
+      role: problem_generator
+      description: Generates competitive programming problems with test cases
+    - name: solver
+      role: code_solver
+      description: Writes Python solutions to solve the generated problems
+
+observation_space:
+  type: dict
+  fields:
+    - episode_id: integer
+    - archetype: categorical [array, graph, dp]
+    - task_id: integer
+    - difficulty: integer [1, 2, 3]
+    - problem_template: string
+    - public_test_cases: list
+    - hidden_test_count: integer
+    - elo: dict
+
+action_space:
+  type: dict
+  setter:
+    code: string (Python code)
+  solver:
+    code: string (Python code)
+
+reward:
+  type: multi_agent
+  setter:
+    win: +50
+    lose: -10
+    invalid: -20
+  solver:
+    win: +50
+    lose: -10
+    tle: -20
+
+metrics:
+  - solver_pass_rate
+  - solver_public_pass_rate
+  - solver_hidden_pass_rate
+  - setter_win_rate
+  - elo_rating
+  - difficulty_level
+
+episodes:
+  max_steps: 1  # One step = full episode
+  reset_required: true

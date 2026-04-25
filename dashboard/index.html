@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCourt</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0b1020;
+            --panel: #131a2d;
+            --panel-2: #18213a;
+            --border: #2a3558;
+            --text: #eff4ff;
+            --muted: #9eadcf;
+            --accent-a: #4ecdc4;
+            --accent-b: #7c5cff;
+            --accent-c: #ff8c42;
+            --good: #53d18d;
+            --bad: #ff6b6b;
+        }
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(78, 205, 196, 0.18), transparent 28%),
+                radial-gradient(circle at top right, rgba(124, 92, 255, 0.18), transparent 32%),
+                var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.5;
+        }
+        .page { max-width: 1360px; margin: 0 auto; padding: 28px 20px 56px; }
+        .hero, .panel, .metric-card {
+            background: rgba(19, 26, 45, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .hero {
+            display: grid;
+            gap: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .eyebrow {
+            display: inline-flex;
+            width: fit-content;
+            gap: 8px;
+            align-items: center;
+            color: var(--muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.02);
+        }
+        h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.02; max-width: 12ch; }
+        .hero p { max-width: 78ch; color: var(--muted); }
+        .story-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .story-card {
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.02);
+        }
+        .story-card strong { display: block; margin-bottom: 6px; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+        .button, button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--panel-2);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .button.primary, button.primary {
+            background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+            border-color: transparent;
+            color: #09111f;
+            font-weight: 700;
+        }
+        .button.ghost, button.ghost { background: transparent; }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .metric-card { padding: 18px; min-height: 116px; }
+        .metric-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+        .metric-value { font-size: 30px; font-weight: 700; margin-bottom: 4px; }
+        .metric-sub { color: var(--muted); font-size: 14px; }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .stack { display: grid; gap: 16px; }
+        .panel { padding: 20px; }
+        .panel h2 { font-size: 20px; margin-bottom: 14px; }
+        .panel h3 { font-size: 16px; margin-bottom: 8px; }
+        .muted { color: var(--muted); }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+        input, select, textarea {
+            width: 100%;
+            min-height: 40px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0c1223;
+            color: var(--text);
+            font: inherit;
+        }
+        textarea { min-height: 180px; resize: vertical; }
+        .button-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+        .list { display: grid; gap: 12px; }
+        .list-item {
+            display: grid;
+            gap: 6px;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        .split { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+        .badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+            color: var(--muted);
+        }
+        .status-good { color: var(--good); }
+        .status-bad { color: var(--bad); }
+        pre, .codebox {
+            background: #0c1223;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 13px;
+        }
+        .steps { display: grid; gap: 12px; }
+        .step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
+        .step-index {
+            width: 34px; height: 34px; border-radius: 999px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+            color: #09111f; font-weight: 700; font-size: 14px;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { text-align: left; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; }
+        th { color: var(--muted); font-weight: 600; }
+        .full-width { margin-top: 16px; }
+        .loading { color: var(--muted); font-size: 14px; }
+        .hidden { display: none; }
+        @media (max-width: 1080px) {
+            .metrics, .main-grid, .controls, .split, .story-strip { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="eyebrow">OpenEnv Docker Space</div>
+            <h1>CodeCourt</h1>
+            <p>
+                LLMs rarely fail on familiar coding prompts. They fail when hidden edge cases and vulnerabilities expose brittle reasoning.
+                CodeCourt is an Adversarial Code Auditing Environment built around that failure mode, forcing the Blue Team Solver to improve via reward shaping and GRPO.
+            </p>
+            <div class="story-strip">
+                <div class="story-card">
+                    <strong>Before</strong>
+                    Blue Team solvers can pass public tests and still collapse on hidden zero-day vulnerabilities.
+                </div>
+                <div class="story-card">
+                    <strong>Fix</strong>
+                    Red Team adversarial tests, strict memory/complexity penalties, and dynamic variation push the policy toward robust patching.
+                </div>
+                <div class="story-card">
+                    <strong>After</strong>
+                    Training artifacts and live WebSockets make security robustness and reward improvements visible in the demo.
+                </div>
+            </div>
+            <div class="hero-actions">
+                <a class="button primary" href="/api/spec" target="_blank" rel="noreferrer">Open OpenEnv Spec</a>
+                <a class="button" href="/api/readme" target="_blank" rel="noreferrer">Read Project README</a>
+                <a class="button ghost" href="/api/health" target="_blank" rel="noreferrer">API Health</a>
+            </div>
+        </section>
+
+        <section class="panel full-width" id="live-arena" style="margin-bottom: 24px; position: relative; overflow: hidden; transition: background 0.3s;">
+            <h2>Live Execution Arena (WebSocket Spectator)</h2>
+            <div class="metrics" style="margin-top: 16px;">
+                <div class="metric-card"><div class="metric-label">Status</div><div class="metric-value" id="ws-status">Connecting...</div><div class="metric-sub" id="ws-sub">Awaiting GRPO events</div></div>
+                <div class="metric-card"><div class="metric-label">Latest Outcome</div><div class="metric-value" id="ws-outcome">-</div><div class="metric-sub">Setter vs Solver</div></div>
+                <div class="metric-card"><div class="metric-label">Latest Reward</div><div class="metric-value" id="ws-reward">-</div><div class="metric-sub">Shaped Reward</div></div>
+                <div class="metric-card"><div class="metric-label">Pass Rate</div><div class="metric-value" id="ws-pass-rate">-</div><div class="metric-sub">Oracle verification</div></div>
+            </div>
+            <div style="margin-top: 16px; border: 1px solid var(--border); border-radius: 8px; padding: 16px; background: rgba(0,0,0,0.2);">
+                <div style="display: flex; align-items: flex-end; gap: 4px; height: 100px; overflow: hidden;" id="ws-chart">
+                    <!-- Bars will be added here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="metrics" id="metrics">
+            <div class="metric-card"><div class="metric-label">Environment</div><div class="metric-value">...</div><div class="metric-sub loading">Loading overview</div></div>
+            <div class="metric-card"><div class="metric-label">Archetypes</div><div class="metric-value">...</div><div class="metric-sub loading">Loading overview</div></div>
+            <div class="metric-card"><div class="metric-label">Tasks</div><div class="metric-value">...</div><div class="metric-sub loading">Loading overview</div></div>
+            <div class="metric-card"><div class="metric-label">Difficulty</div><div class="metric-value">...</div><div class="metric-sub loading">Loading overview</div></div>
+        </section>
+
+        <section class="main-grid">
+            <div class="stack">
+                <div class="panel">
+                    <h2>Interactive Environment Console</h2>
+                    <div class="controls">
+                        <label>Archetype
+                            <select id="archetype">
+                                <option value="">Random</option>
+                                <option value="array">array</option>
+                                <option value="graph">graph</option>
+                                <option value="dp">dp</option>
+                            </select>
+                        </label>
+                        <label>Task ID
+                            <input id="task-id" type="number" min="0" placeholder="0 for first task">
+                        </label>
+                        <label>Difficulty
+                            <select id="difficulty">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </label>
+                        <label>Seed
+                            <input id="seed" type="number" value="42">
+                        </label>
+                    </div>
+                    <div class="button-row">
+                        <button class="primary" id="create-session">Create Episode</button>
+                        <button id="reset-session" disabled>Reset Episode</button>
+                        <button id="run-bruteforce" disabled>Run Baseline Blue Team</button>
+                        <button id="run-reference" disabled>Run Reference Blue Team</button>
+                    </div>
+                    <div class="button-row">
+                        <button id="toggle-custom" disabled>Use Custom Blue Team Code</button>
+                    </div>
+                    <div id="custom-solver-wrap" class="hidden" style="margin-top:16px;">
+                        <label>Custom Solver Code
+                            <textarea id="custom-solver-code" placeholder="Paste Python code that reads stdin and writes stdout."></textarea>
+                        </label>
+                        <div class="button-row">
+                            <button class="primary" id="run-custom" disabled>Run Custom Solver</button>
+                        </div>
+                    </div>
+                    <div id="session-meta" class="list" style="margin-top:16px;">
+                        <div class="loading">No active episode yet.</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Current Problem</h2>
+                    <div id="problem-card" class="loading">Create an episode to inspect the generated task.</div>
+                </div>
+
+                <div class="panel">
+                    <h2>Run Results</h2>
+                    <div id="run-results" class="loading">Run a solver to see reward breakdowns, outcome, and per-test execution results.</div>
+                </div>
+            </div>
+
+            <div class="stack">
+                <div class="panel">
+                    <h2>Training Pipeline</h2>
+                    <div class="steps" id="pipeline-steps">
+                        <div class="loading">Loading training pipeline...</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Benchmark Sandbox</h2>
+                    <div class="controls">
+                        <label>Episodes
+                            <input id="benchmark-episodes" type="number" min="1" max="30" value="6">
+                        </label>
+                        <label>Solver Mode
+                            <select id="benchmark-mode">
+                                <option value="brute_force">brute_force</option>
+                                <option value="reference">reference</option>
+                            </select>
+                        </label>
+                        <label>Seed
+                            <input id="benchmark-seed" type="number" value="42">
+                        </label>
+                        <label>&nbsp;
+                            <button class="primary" id="run-benchmark">Run Benchmark</button>
+                        </label>
+                    </div>
+                    <div id="benchmark-output" class="loading">Run a benchmark to compare average pass rate and reward over multiple episodes.</div>
+                </div>
+
+                <div class="panel">
+                    <h2>Artifacts & Training Status</h2>
+                    <div id="artifacts" class="loading">Checking committed outputs and GRPO artifacts...</div>
+                </div>
+
+                <div class="panel">
+                    <h2>Sample Walkthrough</h2>
+                    <div id="walkthrough" class="loading">Loading a baseline/reference comparison on one seeded episode...</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel full-width">
+            <h2>Backend Endpoints</h2>
+            <table>
+                <thead>
+                    <tr><th>Endpoint</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>POST /api/session</code></td><td>Create a new episode session with optional archetype, task, and difficulty.</td></tr>
+                    <tr><td><code>POST /api/session/{id}/run</code></td><td>Execute brute-force, reference, or custom solver code against the current task.</td></tr>
+                    <tr><td><code>POST /api/benchmark</code></td><td>Evaluate a solver mode across multiple fresh episodes and summarize outcomes.</td></tr>
+                    <tr><td><code>GET /api/overview</code></td><td>Environment counts, agent roles, and training pipeline steps.</td></tr>
+                    <tr><td><code>GET /api/artifacts</code></td><td>Committed baseline/training manifests/logs/plots status.</td></tr>
+                    <tr><td><code>GET /api/spec</code></td><td>OpenEnv manifest as raw text.</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        let sessionId = null;
+        let useCustom = false;
+
+        const fmtPct = (value) => `${(value * 100).toFixed(1)}%`;
+        const pretty = (value) => JSON.stringify(value, null, 2);
+
+        async function fetchJSON(url, options = {}) {
+            const response = await fetch(url, {
+                headers: { "Content-Type": "application/json" },
+                ...options
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.detail || `${url} failed: ${response.status}`);
+            }
+            return payload;
+        }
+
+        function getSessionPayload() {
+            const archetype = document.getElementById("archetype").value || null;
+            const rawTaskId = document.getElementById("task-id").value.trim();
+            const taskId = rawTaskId === "" ? null : Number(rawTaskId);
+            return {
+                archetype,
+                task_id: Number.isNaN(taskId) ? null : taskId,
+                difficulty: Number(document.getElementById("difficulty").value),
+                seed: Number(document.getElementById("seed").value || 42)
+            };
+        }
+
+        function renderMetrics(overview) {
+            const cards = [
+                { label: "Environment", value: overview.environment.name, sub: `v${overview.environment.version}` },
+                { label: "Archetypes", value: overview.environment.archetype_count, sub: `${overview.environment.agent_count} competing agents` },
+                { label: "Tasks", value: overview.environment.task_count, sub: "Across array, graph, and DP" },
+                { label: "Difficulty", value: overview.environment.difficulty_tiers, sub: "Curriculum tiers" }
+            ];
+            document.getElementById("metrics").innerHTML = cards.map(card => `
+                <div class="metric-card">
+                    <div class="metric-label">${card.label}</div>
+                    <div class="metric-value">${card.value}</div>
+                    <div class="metric-sub">${card.sub}</div>
+                </div>
+            `).join("");
+        }
+
+        function renderPipeline(overview) {
+            document.getElementById("pipeline-steps").innerHTML = overview.training_pipeline.map((step, index) => `
+                <div class="step">
+                    <div class="step-index">${index + 1}</div>
+                    <div class="list-item">${step}</div>
+                </div>
+            `).join("");
+        }
+
+        function renderSessionState(state) {
+            document.getElementById("session-meta").innerHTML = `
+                <div class="list-item">
+                    <h3>Session ${sessionId}</h3>
+                    <div class="badge-row">
+                        <span class="badge">Episode ${state.episode_id}</span>
+                        <span class="badge">Archetype: ${state.archetype}</span>
+                        <span class="badge">Task ID: ${state.task_id}</span>
+                        <span class="badge">Difficulty: ${state.difficulty}/3</span>
+                    </div>
+                    <div class="split">
+                        <div>Setter reward: ${state.setter_reward}</div>
+                        <div>Solver reward: ${state.solver_reward}</div>
+                    </div>
+                    <div class="muted">Outcome: ${state.outcome}</div>
+                </div>
+                <div class="list-item">
+                    <h3>Elo Snapshot</h3>
+                    <div class="split">
+                        <div>Setter Elo: ${state.elo.setter_elo}</div>
+                        <div>Solver Elo: ${state.elo.solver_elo}</div>
+                    </div>
+                    <div class="muted">${state.rendered}</div>
+                </div>
+            `;
+
+            const problem = state.problem;
+            document.getElementById("problem-card").innerHTML = `
+                <div class="list">
+                    <div class="list-item">
+                        <h3>${problem.title}</h3>
+                        <div class="badge-row">
+                            <span class="badge">Complexity: ${problem.optimal_complexity}</span>
+                            <span class="badge">Public Cases: ${problem.public_test_count}</span>
+                            <span class="badge">Hidden Cases: ${problem.hidden_test_count}</span>
+                        </div>
+                        <div class="muted">${problem.constraints}</div>
+                        <p>${problem.description}</p>
+                    </div>
+                    <div class="split">
+                        <div class="list-item">
+                            <h3>Input Format</h3>
+                            <div class="codebox">${problem.input_format}</div>
+                        </div>
+                        <div class="list-item">
+                            <h3>Output Format</h3>
+                            <div class="codebox">${problem.output_format}</div>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <h3>Representative Test Cases</h3>
+                        ${problem.public_test_cases.map((test, index) => `<div class="codebox"><strong>Public Case ${index + 1}</strong>\nInput:\n${test.input}\n\nExpected:\n${test.expected}</div>`).join("")}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRunResult(payload) {
+            const state = payload.session_state;
+            const info = payload.info;
+            const solverResult = state.solver_result;
+            const setterResult = state.setter_result;
+
+            const resultTable = solverResult ? `
+                <table>
+                    <thead><tr><th>Test</th><th>Status</th><th>Passed</th><th>Time</th><th>stderr</th></tr></thead>
+                    <tbody>
+                        ${solverResult.results.map(row => `
+                            <tr>
+                                <td>${row.test_id}</td>
+                                <td>${row.status}</td>
+                                <td>${row.passed}</td>
+                                <td>${row.execution_time.toFixed(4)}s</td>
+                                <td>${row.stderr || "-"}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            ` : "<div class='muted'>No solver results yet.</div>";
+
+            document.getElementById("run-results").innerHTML = `
+                <div class="list">
+                    <div class="list-item">
+                        <h3>Outcome</h3>
+                        <div class="badge-row">
+                            <span class="badge ${info.outcome === "solver_wins" ? "status-good" : info.outcome === "setter_wins" ? "status-bad" : ""}">${info.outcome}</span>
+                            <span class="badge">Public pass rate: ${fmtPct(info.solver_public_pass_rate)}</span>
+                            <span class="badge">Hidden pass rate: ${fmtPct(info.solver_hidden_pass_rate)}</span>
+                            <span class="badge">Setter pass rate: ${fmtPct(info.setter_pass_rate)}</span>
+                            <span class="badge">Setter valid: ${info.setter_valid}</span>
+                        </div>
+                        ${info.validation_errors.length ? `<div class="muted">Validation errors: ${info.validation_errors.join(", ")}</div>` : ""}
+                        ${info.validation_warnings && info.validation_warnings.length ? `<div class="muted">Validation warnings: ${info.validation_warnings.join(", ")}</div>` : ""}
+                    </div>
+                    <div class="split">
+                        <div class="list-item">
+                            <h3>Setter Reward Breakdown</h3>
+                            <pre>${pretty(payload.setter_reward_info)}</pre>
+                        </div>
+                        <div class="list-item">
+                            <h3>Solver Reward Breakdown</h3>
+                            <pre>${pretty(payload.solver_reward_info)}</pre>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div class="list-item">
+                            <h3>Setter Code</h3>
+                            <pre>${state.setter_code || "n/a"}</pre>
+                        </div>
+                        <div class="list-item">
+                            <h3>Solver Code</h3>
+                            <pre>${state.solver_code || "n/a"}</pre>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <h3>Oracle Test Results</h3>
+                        ${resultTable}
+                    </div>
+                    <div class="split">
+                        <div class="list-item">
+                            <h3>Setter Result</h3>
+                            <pre>${pretty(setterResult)}</pre>
+                        </div>
+                        <div class="list-item">
+                            <h3>Solver Result</h3>
+                            <pre>${pretty(solverResult)}</pre>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderArtifacts(data) {
+            document.getElementById("artifacts").innerHTML = `
+                <div class="list">
+                    <div class="list-item">
+                        <h3>Artifact Presence</h3>
+                        <div class="badge-row">
+                            <span class="badge ${data.baseline_available ? "status-good" : "status-bad"}">Baseline ${data.baseline_available ? "found" : "missing"}</span>
+                            <span class="badge ${data.training_manifest_available ? "status-good" : "status-bad"}">Manifest ${data.training_manifest_available ? "found" : "missing"}</span>
+                            <span class="badge ${data.training_log_available ? "status-good" : "status-bad"}">GRPO logs ${data.training_log_available ? "found" : "missing"}</span>
+                            <span class="badge ${data.training_summary_available ? "status-good" : "status-bad"}">Summary ${data.training_summary_available ? "found" : "missing"}</span>
+                            <span class="badge ${data.plots_available ? "status-good" : "status-bad"}">Plots ${data.plots_available ? "found" : "missing"}</span>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <h3>Latest Training Metrics</h3>
+                        <div class="split">
+                            <div>Reward: ${data.latest_training_metrics.reward ?? "n/a"}</div>
+                            <div>Pass Rate: ${data.latest_training_metrics.reward_pass_rate == null ? "n/a" : fmtPct(data.latest_training_metrics.reward_pass_rate)}</div>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <h3>Proof of Improvement</h3>
+                        <div class="split">
+                            <div>Baseline pass rate: ${data.baseline_summary?.avg_solver_pass_rate == null ? "n/a" : fmtPct(data.baseline_summary.avg_solver_pass_rate)}</div>
+                            <div>Trained pass rate: ${data.evaluation_summary?.trained_pass_rate == null ? "n/a" : fmtPct(data.evaluation_summary.trained_pass_rate)}</div>
+                            <div>Baseline reward: ${data.baseline_summary?.avg_solver_reward == null ? "n/a" : data.baseline_summary.avg_solver_reward.toFixed(2)}</div>
+                            <div>Trained reward: ${data.evaluation_summary?.trained_reward == null ? "n/a" : data.evaluation_summary.trained_reward.toFixed(2)}</div>
+                        </div>
+                        <div class="muted">Robustness metric: ${data.evaluation_summary?.trained_robustness == null ? "n/a" : data.evaluation_summary.trained_robustness.toFixed(2)}</div>
+                    </div>
+                    <div class="list-item">
+                        <h3>Manifest</h3>
+                        <pre>${data.training_manifest ? pretty(data.training_manifest) : "No training manifest committed yet."}</pre>
+                    </div>
+                    <div class="list-item">
+                        <h3>Plot Files</h3>
+                        <div>${data.plot_files.length ? data.plot_files.join(", ") : "No plots available yet."}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderWalkthrough(data) {
+            document.getElementById("walkthrough").innerHTML = `
+                <div class="list">
+                    <div class="list-item">
+                        <h3>${data.problem.title}</h3>
+                        <div class="badge-row">
+                            <span class="badge">Archetype: ${data.problem.archetype}</span>
+                            <span class="badge">Task ID: ${data.problem.task_id}</span>
+                            <span class="badge">Difficulty: ${data.problem.difficulty}</span>
+                        </div>
+                        <p>${data.problem.description}</p>
+                    </div>
+                    ${data.runs.map(run => `
+                        <div class="list-item">
+                            <h3>${run.label}</h3>
+                            <div class="badge-row">
+                                <span class="badge">Mode: ${run.solver_mode}</span>
+                                <span class="badge ${run.outcome === "solver_wins" ? "status-good" : "status-bad"}">Outcome: ${run.outcome}</span>
+                                <span class="badge">Pass Rate: ${fmtPct(run.solver_pass_rate)}</span>
+                                <span class="badge">Reward: ${run.solver_reward}</span>
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+        }
+
+        function renderBenchmark(data) {
+            document.getElementById("benchmark-output").innerHTML = `
+                <div class="list">
+                    <div class="list-item">
+                        <h3>Benchmark Summary</h3>
+                        <div class="badge-row">
+                            <span class="badge">Mode: ${data.solver_mode}</span>
+                            <span class="badge">Avg Pass Rate: ${fmtPct(data.summary.avg_solver_pass_rate)}</span>
+                            <span class="badge">Avg Reward: ${data.summary.avg_solver_reward.toFixed(2)}</span>
+                            <span class="badge">Solver Win Rate: ${fmtPct(data.summary.solver_win_rate)}</span>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <h3>Episode Breakdown</h3>
+                        <table>
+                            <thead><tr><th>Episode</th><th>Task</th><th>Outcome</th><th>Pass Rate</th><th>Reward</th></tr></thead>
+                            <tbody>
+                                ${data.episodes.map(ep => `
+                                    <tr>
+                                        <td>${ep.episode}</td>
+                                        <td>${ep.archetype}/${ep.task_id}</td>
+                                        <td>${ep.outcome}</td>
+                                        <td>${fmtPct(ep.solver_pass_rate)}</td>
+                                        <td>${ep.solver_reward}</td>
+                                    </tr>
+                                `).join("")}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setSessionControls(enabled) {
+            document.getElementById("reset-session").disabled = !enabled;
+            document.getElementById("run-bruteforce").disabled = !enabled;
+            document.getElementById("run-reference").disabled = !enabled;
+            document.getElementById("toggle-custom").disabled = !enabled;
+            document.getElementById("run-custom").disabled = !enabled;
+        }
+
+        function connectLiveArena() {
+            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(`${protocol}//${location.host}/ws/arena`);
+            const statusEl = document.getElementById("ws-status");
+            const outcomeEl = document.getElementById("ws-outcome");
+            const rewardEl = document.getElementById("ws-reward");
+            const passRateEl = document.getElementById("ws-pass-rate");
+            const arenaEl = document.getElementById("live-arena");
+            const chartEl = document.getElementById("ws-chart");
+
+            ws.onopen = () => {
+                statusEl.textContent = "Live";
+                statusEl.style.color = "var(--good)";
+            };
+
+            ws.onclose = () => {
+                statusEl.textContent = "Disconnected";
+                statusEl.style.color = "var(--bad)";
+                setTimeout(connectLiveArena, 5000);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                outcomeEl.textContent = data.outcome === "solver_wins" ? "Solver Wins" : "Setter Wins";
+                outcomeEl.style.color = data.outcome === "solver_wins" ? "var(--good)" : "var(--bad)";
+                rewardEl.textContent = data.reward.toFixed(2);
+                passRateEl.textContent = fmtPct(data.pass_rate);
+
+                arenaEl.style.background = data.outcome === "solver_wins" ? "rgba(83, 209, 141, 0.15)" : "rgba(255, 107, 107, 0.15)";
+                setTimeout(() => { arenaEl.style.background = "rgba(19, 26, 45, 0.92)"; }, 500);
+
+                const bar = document.createElement("div");
+                const height = Math.max(5, Math.min(100, (data.reward + 50))); 
+                bar.style.height = `${height}%`;
+                bar.style.width = "20px";
+                bar.style.background = data.outcome === "solver_wins" ? "var(--good)" : "var(--bad)";
+                bar.style.borderRadius = "4px 4px 0 0";
+                bar.title = `Reward: ${data.reward.toFixed(2)} | Pass Rate: ${fmtPct(data.pass_rate)}`;
+                chartEl.appendChild(bar);
+
+                if (chartEl.children.length > 50) {
+                    chartEl.removeChild(chartEl.firstChild);
+                }
+            };
+        }
+
+        async function createSession() {
+            const payload = getSessionPayload();
+            const data = await fetchJSON("/api/session", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            sessionId = data.session_id;
+            setSessionControls(true);
+            renderSessionState(data.state);
+            document.getElementById("run-results").innerHTML = "<div class='loading'>Episode ready. Run a solver to inspect the full step outcome.</div>";
+        }
+
+        async function resetSession() {
+            if (!sessionId) return;
+            const payload = getSessionPayload();
+            const data = await fetchJSON(`/api/session/${sessionId}/reset`, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            renderSessionState(data.state);
+            document.getElementById("run-results").innerHTML = "<div class='loading'>Episode reset. Run a solver to inspect the full step outcome.</div>";
+        }
+
+        async function runSolver(mode) {
+            if (!sessionId) return;
+            const payload = {
+                solver_mode: mode,
+                solver_code: mode === "custom" ? document.getElementById("custom-solver-code").value : null
+            };
+            const data = await fetchJSON(`/api/session/${sessionId}/run`, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            renderSessionState(data.session_state);
+            renderRunResult(data);
+        }
+
+        async function runBenchmark() {
+            const payload = {
+                episodes: Number(document.getElementById("benchmark-episodes").value || 6),
+                solver_mode: document.getElementById("benchmark-mode").value,
+                seed: Number(document.getElementById("benchmark-seed").value || 42)
+            };
+            document.getElementById("benchmark-output").innerHTML = "<div class='loading'>Running benchmark...</div>";
+            const data = await fetchJSON("/api/benchmark", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            renderBenchmark(data);
+        }
+
+        function toggleCustom() {
+            useCustom = !useCustom;
+            document.getElementById("custom-solver-wrap").classList.toggle("hidden", !useCustom);
+        }
+
+        async function boot() {
+            try {
+                const [overview, artifacts, walkthrough] = await Promise.all([
+                    fetchJSON("/api/overview"),
+                    fetchJSON("/api/artifacts"),
+                    fetchJSON("/api/walkthrough")
+                ]);
+                renderMetrics(overview);
+                renderPipeline(overview);
+                renderArtifacts(artifacts);
+                renderWalkthrough(walkthrough);
+                connectLiveArena();
+            } catch (error) {
+                document.body.insertAdjacentHTML("beforeend", `<div style="padding:20px;color:#ff6b6b;">${error.message}</div>`);
+            }
+        }
+
+        document.getElementById("create-session").addEventListener("click", () => createSession().catch(alert));
+        document.getElementById("reset-session").addEventListener("click", () => resetSession().catch(alert));
+        document.getElementById("run-bruteforce").addEventListener("click", () => runSolver("brute_force").catch(alert));
+        document.getElementById("run-reference").addEventListener("click", () => runSolver("reference").catch(alert));
+        document.getElementById("run-custom").addEventListener("click", () => runSolver("custom").catch(alert));
+        document.getElementById("run-benchmark").addEventListener("click", () => runBenchmark().catch(alert));
+        document.getElementById("toggle-custom").addEventListener("click", toggleCustom);
+
+        boot();
+    </script>
+</body>
+</html>
