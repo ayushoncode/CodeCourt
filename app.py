@@ -69,7 +69,7 @@ class SessionStore:
 
 
 app = FastAPI(title="CodeCourt", version="1.0.0")
-app.mount("/dashboard", StaticFiles(directory=str(DASHBOARD_DIR)), name="dashboard")
+app.mount("/dashboard", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")
 SESSIONS = SessionStore()
 
 active_connections: list[WebSocket] = []
@@ -304,18 +304,16 @@ def _read_json_if_exists(path: Path):
 
 def _build_artifacts() -> dict:
     baseline_path = OUTPUTS_DIR / "baseline_results.json"
-    training_dir = OUTPUTS_DIR / "grpo_solver"
-    training_log_path = training_dir / "training_log_history.json"
-    manifest_path = training_dir / "training_manifest.json"
-    summary_path = training_dir / "training_summary.json"
+    training_log_path = OUTPUTS_DIR / "training_history.json"
+    manifest_path = OUTPUTS_DIR / "artifact_manifest.json"
     plots_dir = OUTPUTS_DIR / "plots"
     evaluation_summary_path = plots_dir / "evaluation_summary.json"
 
     baseline = _read_json_if_exists(baseline_path)
     training_log = _read_json_if_exists(training_log_path)
     manifest = _read_json_if_exists(manifest_path)
-    training_summary = _read_json_if_exists(summary_path)
     evaluation_summary = _read_json_if_exists(evaluation_summary_path)
+    training_summary = evaluation_summary if isinstance(evaluation_summary, dict) else None
 
     latest_reward = None
     latest_pass_rate = None
@@ -323,8 +321,8 @@ def _build_artifacts() -> dict:
         reward_rows = [row for row in training_log if isinstance(row, dict)]
         if reward_rows:
             latest = reward_rows[-1]
-            latest_reward = latest.get("reward")
-            latest_pass_rate = latest.get("reward_pass_rate")
+            latest_reward = latest.get("solver_reward", latest.get("reward"))
+            latest_pass_rate = latest.get("solver_pass_rate", latest.get("reward_pass_rate"))
 
     return {
         "baseline_available": baseline is not None,
@@ -392,6 +390,7 @@ def _benchmark(request: BenchmarkRequest) -> dict:
         solver_request = SolverRunRequest(solver_mode=request.solver_mode)
         solver_code = _select_solver(problem, solver_request)
         _, solver_info, _, info = env.step(setter_code, solver_code)
+        effective_pass_rate = 0.0 if info["outcome"] == "invalid" else info["solver_pass_rate"]
         episodes.append({
             "episode": episode_idx,
             "archetype": obs["archetype"],
@@ -399,7 +398,8 @@ def _benchmark(request: BenchmarkRequest) -> dict:
             "difficulty": obs["difficulty"],
             "outcome": info["outcome"],
             "solver_reward": solver_info["reward"],
-            "solver_pass_rate": info["solver_pass_rate"],
+            "solver_pass_rate": effective_pass_rate,
+            "raw_solver_pass_rate": info["solver_pass_rate"],
         })
 
     avg_pass_rate = sum(ep["solver_pass_rate"] for ep in episodes) / len(episodes)
@@ -413,6 +413,7 @@ def _benchmark(request: BenchmarkRequest) -> dict:
             "avg_solver_reward": avg_reward,
             "solver_win_rate": sum(1 for ep in episodes if ep["outcome"] == "solver_wins") / len(episodes),
             "setter_win_rate": sum(1 for ep in episodes if ep["outcome"] == "setter_wins") / len(episodes),
+            "invalid_rate": sum(1 for ep in episodes if ep["outcome"] == "invalid") / len(episodes),
         },
     }
 

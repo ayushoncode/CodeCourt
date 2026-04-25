@@ -1,4 +1,7 @@
 {
+  "artifacts_version": 1,
+  "project": "CodeCourt",
+  "generated_for": "OpenEnv Docker Space proof package",
   "baseline": {
     "path": "./outputs/baseline_results.json",
     "summary": {
@@ -10,5 +13,37 @@
       "avg_solver_pass_rate": 0.5472222222222223,
       "avg_solver_reward": 24.762
     }
-  }
+  },
+  "trained_reference": {
+    "path": "./outputs/training_history.json",
+    "run_type": "smoke_run_reference",
+    "description": "Committed smoke-run reference used as the trained-side comparison in the demo dashboard.",
+    "summary": {
+      "episodes": 30,
+      "avg_solver_pass_rate": 1.0,
+      "avg_solver_reward": 73.22125,
+      "setter_win_rate": 0.0
+    }
+  },
+  "evaluation_summary": {
+    "path": "./outputs/plots/evaluation_summary.json",
+    "summary": {
+      "baseline_pass_rate": 0.5472222222222223,
+      "trained_pass_rate": 1.0,
+      "pass_rate_delta": 0.4527777777777777,
+      "baseline_reward": 24.762,
+      "trained_reward": 73.22125,
+      "reward_delta": 48.45925,
+      "trained_robustness": null,
+      "trained_setter_win_rate": 0.0
+    }
+  },
+  "plots": [
+    "./outputs/plots/training_curves.png",
+    "./outputs/plots/before_after.png"
+  ],
+  "notes": [
+    "The trained-side comparison currently uses the committed training_history.json smoke run, not a full GRPO checkpoint log.",
+    "Dashboard artifact status and README links are intended to match these committed files exactly."
+  ]
 }

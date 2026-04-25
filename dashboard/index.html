@@ -623,6 +623,7 @@
                             <span class="badge">Avg Pass Rate: ${fmtPct(data.summary.avg_solver_pass_rate)}</span>
                             <span class="badge">Avg Reward: ${data.summary.avg_solver_reward.toFixed(2)}</span>
                             <span class="badge">Solver Win Rate: ${fmtPct(data.summary.solver_win_rate)}</span>
+                            <span class="badge">Invalid Rate: ${fmtPct(data.summary.invalid_rate ?? 0)}</span>
                         </div>
                     </div>
                     <div class="list-item">
