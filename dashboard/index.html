@@ -1,804 +1,1074 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeCourt</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --bg: #0b1020;
-            --panel: #131a2d;
-            --panel-2: #18213a;
-            --border: #2a3558;
-            --text: #eff4ff;
-            --muted: #9eadcf;
-            --accent-a: #4ecdc4;
-            --accent-b: #7c5cff;
-            --accent-c: #ff8c42;
-            --good: #53d18d;
-            --bad: #ff6b6b;
-        }
-        body {
-            background:
-                radial-gradient(circle at top left, rgba(78, 205, 196, 0.18), transparent 28%),
-                radial-gradient(circle at top right, rgba(124, 92, 255, 0.18), transparent 32%),
-                var(--bg);
-            color: var(--text);
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            line-height: 1.5;
-        }
-        .page { max-width: 1360px; margin: 0 auto; padding: 28px 20px 56px; }
-        .hero, .panel, .metric-card {
-            background: rgba(19, 26, 45, 0.92);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-        }
-        .hero {
-            display: grid;
-            gap: 16px;
-            padding: 28px;
-            margin-bottom: 24px;
-        }
-        .eyebrow {
-            display: inline-flex;
-            width: fit-content;
-            gap: 8px;
-            align-items: center;
-            color: var(--muted);
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            background: rgba(255,255,255,0.02);
-        }
-        h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.02; max-width: 12ch; }
-        .hero p { max-width: 78ch; color: var(--muted); }
-        .story-strip {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
-        }
-        .story-card {
-            padding: 14px;
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.02);
-        }
-        .story-card strong { display: block; margin-bottom: 6px; }
-        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-        .button, button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            min-height: 40px;
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--panel-2);
-            color: var(--text);
-            text-decoration: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .button.primary, button.primary {
-            background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
-            border-color: transparent;
-            color: #09111f;
-            font-weight: 700;
-        }
-        .button.ghost, button.ghost { background: transparent; }
-        .metrics {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        .metric-card { padding: 18px; min-height: 116px; }
-        .metric-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
-        .metric-value { font-size: 30px; font-weight: 700; margin-bottom: 4px; }
-        .metric-sub { color: var(--muted); font-size: 14px; }
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        .stack { display: grid; gap: 16px; }
-        .panel { padding: 20px; }
-        .panel h2 { font-size: 20px; margin-bottom: 14px; }
-        .panel h3 { font-size: 16px; margin-bottom: 8px; }
-        .muted { color: var(--muted); }
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
-        input, select, textarea {
-            width: 100%;
-            min-height: 40px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: #0c1223;
-            color: var(--text);
-            font: inherit;
-        }
-        textarea { min-height: 180px; resize: vertical; }
-        .button-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
-        .list { display: grid; gap: 12px; }
-        .list-item {
-            display: grid;
-            gap: 6px;
-            padding: 12px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 8px;
-        }
-        .split { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
-        .badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            min-height: 28px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            border: 1px solid var(--border);
-            background: rgba(255,255,255,0.02);
-            color: var(--muted);
-        }
-        .status-good { color: var(--good); }
-        .status-bad { color: var(--bad); }
-        pre, .codebox {
-            background: #0c1223;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-break: break-word;
-            font-size: 13px;
-        }
-        .steps { display: grid; gap: 12px; }
-        .step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
-        .step-index {
-            width: 34px; height: 34px; border-radius: 999px;
-            display: inline-flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
-            color: #09111f; font-weight: 700; font-size: 14px;
-        }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { text-align: left; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; }
-        th { color: var(--muted); font-weight: 600; }
-        .full-width { margin-top: 16px; }
-        .loading { color: var(--muted); font-size: 14px; }
-        .hidden { display: none; }
-        @media (max-width: 1080px) {
-            .metrics, .main-grid, .controls, .split, .story-strip { grid-template-columns: 1fr; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeCourt — Adversarial Code Auditing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060a12;
+  --surface: #0d1525;
+  --surface2: #111c31;
+  --border: #1e2d4a;
+  --border2: #243554;
+  --text: #e8f0ff;
+  --muted: #5a7299;
+  --dim: #8ba3cc;
+  --cyan: #00d4ff;
+  --purple: #7c3aed;
+  --orange: #f97316;
+  --green: #22c55e;
+  --red: #ef4444;
+  --gold: #f59e0b;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRID NOISE BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 10% 0%, rgba(0,212,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 90% 100%, rgba(124,58,237,0.1) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+.page { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.logo-mark {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-weight: 700; font-size: 14px; color: #000;
+}
+.logo-text { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+.topbar-pill {
+  font-family: var(--mono); font-size: 11px;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--border2);
+  color: var(--cyan);
+  background: rgba(0,212,255,0.05);
+}
+.topbar-links { display: flex; gap: 8px; }
+.topbar-links a {
+  font-size: 13px; color: var(--dim); text-decoration: none;
+  padding: 6px 12px; border-radius: 6px; border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.topbar-links a:hover { color: var(--text); border-color: var(--border2); }
+
+/* ── HERO ── */
+.hero {
+  padding: 64px 0 48px;
+  display: grid; gap: 24px;
+}
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 12px; color: var(--cyan);
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+.hero-eyebrow::before {
+  content: ''; width: 24px; height: 1px; background: var(--cyan);
+}
+.hero h1 {
+  font-size: clamp(40px, 6vw, 72px); font-weight: 800;
+  line-height: 1.0; letter-spacing: -0.04em;
+  max-width: 14ch;
+}
+.hero h1 span { color: var(--cyan); }
+.hero-sub { max-width: 60ch; color: var(--dim); font-size: 17px; line-height: 1.7; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; text-decoration: none; border: 1px solid;
+  transition: all 0.15s; font-family: var(--sans);
+}
+.btn-primary {
+  background: var(--cyan); color: #000; border-color: var(--cyan);
+}
+.btn-primary:hover { background: #33ddff; }
+.btn-ghost { background: transparent; color: var(--dim); border-color: var(--border2); }
+.btn-ghost:hover { color: var(--text); border-color: var(--dim); }
+
+/* ── PROOF STRIP ── */
+.proof-strip {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid var(--border2);
+  border-radius: 12px; overflow: hidden;
+  margin-bottom: 32px;
+}
+.proof-card {
+  padding: 24px;
+  border-right: 1px solid var(--border2);
+  position: relative;
+}
+.proof-card:last-child { border-right: none; }
+.proof-num {
+  font-family: var(--mono); font-size: 48px; font-weight: 700;
+  line-height: 1; margin-bottom: 4px;
+}
+.proof-num.cyan { color: var(--cyan); }
+.proof-num.gold { color: var(--gold); }
+.proof-num.green { color: var(--green); }
+.proof-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.proof-desc { color: var(--dim); font-size: 14px; }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.section-header h2 { font-size: 18px; font-weight: 700; }
+.section-tag {
+  font-family: var(--mono); font-size: 11px;
+  padding: 3px 8px; border-radius: 4px;
+  background: rgba(0,212,255,0.08); color: var(--cyan);
+  border: 1px solid rgba(0,212,255,0.2);
+}
+
+/* ── MAIN GRID ── */
+.main-grid {
+  display: grid; grid-template-columns: 1.2fr 0.8fr;
+  gap: 20px; margin-bottom: 20px;
+}
+.col-stack { display: grid; gap: 20px; }
+
+/* ── PANEL ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.panel-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-head h3 { font-size: 15px; font-weight: 700; }
+.panel-body { padding: 20px; }
+
+/* ── STORY CARDS ── */
+.story-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 20px;
+}
+.story-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  position: relative; overflow: hidden;
+}
+.story-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+}
+.story-before::before { background: var(--red); }
+.story-fix::before { background: var(--gold); }
+.story-after::before { background: var(--green); }
+.story-step { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
+.story-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.story-body { font-size: 14px; color: var(--dim); line-height: 1.6; }
+
+/* ── TRAINING PROOF ── */
+.training-proof {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px; margin-bottom: 20px;
+}
+.proof-box {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.proof-box.highlight { border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.04); }
+.pb-label { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.pb-val { font-size: 32px; font-weight: 800; line-height: 1; }
+.pb-val.red { color: var(--red); }
+.pb-val.green { color: var(--green); }
+.pb-val.cyan { color: var(--cyan); }
+.pb-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* ── REWARD CHART ── */
+.chart-wrap {
+  position: relative; padding: 16px 0 0;
+}
+.chart-bars {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 120px; overflow: hidden;
+  padding: 0 4px;
+}
+.chart-bar {
+  flex: 1; border-radius: 3px 3px 0 0;
+  min-height: 4px; transition: height 0.3s;
+}
+.chart-axis {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  padding: 8px 4px 0;
+}
+.chart-legend {
+  display: flex; gap: 16px; margin-top: 8px;
+  font-size: 12px; color: var(--muted);
+}
+.legend-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 999px; margin-right: 4px;
+}
+
+/* ── LIVE ARENA ── */
+.arena-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.arena-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.live-dot {
+  width: 8px; height: 8px; border-radius: 999px;
+  background: var(--green);
+  box-shadow: 0 0 0 0 rgba(34,197,94,0.4);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+.arena-metrics {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.arena-metric {
+  padding: 20px;
+  border-right: 1px solid var(--border);
+}
+.arena-metric:last-child { border-right: none; }
+.am-label { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.am-val { font-size: 28px; font-weight: 800; line-height: 1; }
+.am-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.arena-stream {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 80px; overflow: hidden;
+}
+
+/* ── CONTROLS ── */
+.controls-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 16px;
+}
+label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+select, input, textarea {
+  width: 100%; min-height: 38px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit; font-size: 14px;
+  outline: none; transition: border-color 0.15s;
+}
+select:focus, input:focus, textarea:focus { border-color: var(--cyan); }
+textarea { min-height: 160px; resize: vertical; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.btn-sm {
+  padding: 8px 14px; font-size: 13px; font-weight: 600;
+  border-radius: 7px; border: 1px solid; cursor: pointer;
+  font-family: var(--sans); transition: all 0.15s;
+}
+.btn-sm.primary { background: var(--cyan); color: #000; border-color: var(--cyan); }
+.btn-sm.primary:hover { background: #33ddff; }
+.btn-sm.default { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+.btn-sm.default:hover { border-color: var(--dim); }
+.btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+.hidden { display: none !important; }
+
+/* ── RESULT DISPLAY ── */
+.result-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: var(--mono); font-size: 12px;
+  line-height: 1.7; overflow-x: auto;
+}
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 999px; font-size: 12px;
+  border: 1px solid var(--border2); color: var(--dim);
+  font-family: var(--mono);
+}
+.badge.green { border-color: rgba(34,197,94,0.4); color: var(--green); background: rgba(34,197,94,0.06); }
+.badge.red { border-color: rgba(239,68,68,0.4); color: var(--red); background: rgba(239,68,68,0.06); }
+.badge.cyan { border-color: rgba(0,212,255,0.3); color: var(--cyan); background: rgba(0,212,255,0.06); }
+.badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+
+/* ── TABLE ── */
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; padding: 10px 0; border-bottom: 1px solid var(--border); }
+td { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+.status-good { color: var(--green); }
+.status-bad { color: var(--red); }
+
+/* ── ARTIFACT STATUS ── */
+.artifact-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.artifact-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 6px; font-size: 13px;
+  border: 1px solid;
+}
+.artifact-chip.found { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); color: var(--green); }
+.artifact-chip.missing { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); color: var(--red); }
+
+/* ── DIVIDER ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+/* ── LOADING ── */
+.loading { color: var(--muted); font-size: 14px; font-family: var(--mono); }
+
+/* ── LIST ITEM ── */
+.list-item { padding: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; margin-bottom: 10px; }
+.list-item h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+
+/* ── STEP LIST ── */
+.step-list { display: grid; gap: 10px; }
+.step-item { display: flex; gap: 12px; align-items: flex-start; }
+.step-num {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  color: #000; font-weight: 800; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-body { padding-top: 3px; font-size: 14px; color: var(--dim); line-height: 1.6; }
+
+/* ── COMPARISON ROWS ── */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .main-grid, .training-proof, .compare-grid, .arena-metrics,
+  .controls-grid, .story-row, .proof-strip { grid-template-columns: 1fr; }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.hero { animation: fadeUp 0.5s ease both; }
+.proof-strip { animation: fadeUp 0.5s 0.1s ease both; }
+</style>
 </head>
 <body>
-    <div class="page">
-        <section class="hero">
-            <div class="eyebrow">OpenEnv Docker Space</div>
-            <h1>CodeCourt</h1>
-            <p>
-                Static coding benchmarks are easy to memorize. CodeCourt replaces them with seeded, adversarial tasks that expose brittle reasoning under hidden tests.
-                The proof is not one lucky sample. It is a learning story: failure first, reward movement during training, and a concrete boundary-condition capability that improves afterward.
-            </p>
-            <div class="story-strip">
-                <div class="story-card">
-                    <strong>Before</strong>
-                    Blue Team solvers can pass public tests and still collapse on hidden zero-day vulnerabilities.
-                </div>
-                <div class="story-card">
-                    <strong>Fix</strong>
-                    Red Team adversarial tests, strict memory/complexity penalties, and dynamic variation push the policy toward robust patching.
-                </div>
-                <div class="story-card">
-                    <strong>After</strong>
-                    Training artifacts and live WebSockets make security robustness and reward improvements visible in the demo.
-                </div>
-            </div>
-            <div class="hero-actions">
-                <a class="button primary" href="/api/spec" target="_blank" rel="noreferrer">Open OpenEnv Spec</a>
-                <a class="button" href="/api/readme" target="_blank" rel="noreferrer">Read Project README</a>
-                <a class="button ghost" href="/api/health" target="_blank" rel="noreferrer">API Health</a>
-            </div>
-        </section>
+<div class="page">
 
-        <section class="panel full-width" id="live-arena" style="margin-bottom: 24px; position: relative; overflow: hidden; transition: background 0.3s;">
-            <h2>Live Execution Arena (WebSocket Spectator)</h2>
-            <div class="metrics" style="margin-top: 16px;">
-                <div class="metric-card"><div class="metric-label">Status</div><div class="metric-value" id="ws-status">Connecting...</div><div class="metric-sub" id="ws-sub">Awaiting GRPO events</div></div>
-                <div class="metric-card"><div class="metric-label">Latest Outcome</div><div class="metric-value" id="ws-outcome">-</div><div class="metric-sub">Setter vs Solver</div></div>
-                <div class="metric-card"><div class="metric-label">Latest Reward</div><div class="metric-value" id="ws-reward">-</div><div class="metric-sub">Shaped Reward</div></div>
-                <div class="metric-card"><div class="metric-label">Pass Rate</div><div class="metric-value" id="ws-pass-rate">-</div><div class="metric-sub">Oracle verification</div></div>
-            </div>
-            <div style="margin-top: 16px; border: 1px solid var(--border); border-radius: 8px; padding: 16px; background: rgba(0,0,0,0.2);">
-                <div style="display: flex; align-items: flex-end; gap: 4px; height: 100px; overflow: hidden;" id="ws-chart">
-                    <!-- Bars will be added here -->
-                </div>
-            </div>
-        </section>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark">⚖</div>
+      <span class="logo-text">CodeCourt</span>
+      <span class="topbar-pill">OpenEnv · v1.0.0</span>
+    </div>
+    <nav class="topbar-links">
+      <a href="/api/spec" target="_blank">OpenEnv Spec</a>
+      <a href="/api/readme" target="_blank">README</a>
+      <a href="/api/health" target="_blank">API Health</a>
+    </nav>
+  </header>
 
-        <section class="metrics" id="metrics">
-            <div class="metric-card"><div class="metric-label">Environment</div><div class="metric-value">...</div><div class="metric-sub loading">Loading overview</div></div>
-            <div class="metric-card"><div class="metric-label">Archetypes</div><div class="metric-value">...</div><div class="metric-sub loading">Loading overview</div></div>
-            <div class="metric-card"><div class="metric-label">Tasks</div><div class="metric-value">...</div><div class="metric-sub loading">Loading overview</div></div>
-            <div class="metric-card"><div class="metric-label">Difficulty</div><div class="metric-value">...</div><div class="metric-sub loading">Loading overview</div></div>
-        </section>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">Adversarial Code Auditing Environment</div>
+    <h1>LLMs fail on <span>hidden</span> edge cases.</h1>
+    <p class="hero-sub">
+      Static benchmarks are memorized. CodeCourt forces agents to attack and defend code under adversarial self-play — 
+      exposing brittle reasoning that public tests miss. The Red Team writes the traps. The Blue Team learns to escape them.
+    </p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="/api/spec" target="_blank">↗ OpenEnv Spec</a>
+      <a class="btn btn-ghost" href="/api/readme" target="_blank">Read README</a>
+      <a class="btn btn-ghost" href="/api/health" target="_blank">API Health</a>
+    </div>
+  </section>
 
-        <section class="main-grid">
-            <div class="stack">
-                <div class="panel">
-                    <h2>Interactive Environment Console</h2>
-                    <div class="controls">
-                        <label>Archetype
-                            <select id="archetype">
-                                <option value="">Random</option>
-                                <option value="array">array</option>
-                                <option value="graph">graph</option>
-                                <option value="dp">dp</option>
-                            </select>
-                        </label>
-                        <label>Task ID
-                            <input id="task-id" type="number" min="0" placeholder="0 for first task">
-                        </label>
-                        <label>Difficulty
-                            <select id="difficulty">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                            </select>
-                        </label>
-                        <label>Seed
-                            <input id="seed" type="number" value="42">
-                        </label>
-                    </div>
-                    <div class="button-row">
-                        <button class="primary" id="create-session">Create Episode</button>
-                        <button id="reset-session" disabled>Reset Episode</button>
-                        <button id="run-bruteforce" disabled>Run Baseline Blue Team</button>
-                        <button id="run-reference" disabled>Run Reference Blue Team</button>
-                    </div>
-                    <div class="button-row">
-                        <button id="toggle-custom" disabled>Use Custom Blue Team Code</button>
-                    </div>
-                    <div id="custom-solver-wrap" class="hidden" style="margin-top:16px;">
-                        <label>Custom Solver Code
-                            <textarea id="custom-solver-code" placeholder="Paste Python code that reads stdin and writes stdout."></textarea>
-                        </label>
-                        <div class="button-row">
-                            <button class="primary" id="run-custom" disabled>Run Custom Solver</button>
-                        </div>
-                    </div>
-                    <div id="session-meta" class="list" style="margin-top:16px;">
-                        <div class="loading">No active episode yet.</div>
-                    </div>
-                </div>
+  <!-- STORY CARDS -->
+  <div class="story-row">
+    <div class="story-card story-before">
+      <div class="story-step">① Before Training</div>
+      <div class="story-title">Brute-force solvers fail</div>
+      <div class="story-body">Models pass public samples and collapse on hidden adversarial cases. 54.7% hidden-test pass rate. Setter wins 56.7% of episodes.</div>
+    </div>
+    <div class="story-card story-fix">
+      <div class="story-step">② Intervention</div>
+      <div class="story-title">GRPO trains on oracle rewards</div>
+      <div class="story-body">Red Team generates seeded edge cases. Oracle sandbox executes and scores. Shaped rewards penalize brute-force shortcuts and hidden-test regressions.</div>
+    </div>
+    <div class="story-card story-after">
+      <div class="story-step">③ After Training</div>
+      <div class="story-title">Boundary robustness improves</div>
+      <div class="story-body">Boundary-condition probe: 16.7% → 100% pass rate. 5 of 6 capability cases improved. Brute-force penalty triggers drop to 0%.</div>
+    </div>
+  </div>
 
-                <div class="panel">
-                    <h2>Current Problem</h2>
-                    <div id="problem-card" class="loading">Create an episode to inspect the generated task.</div>
-                </div>
+  <!-- KEY NUMBERS -->
+  <div class="proof-strip">
+    <div class="proof-card">
+      <div class="proof-label">Baseline Hidden Pass Rate</div>
+      <div class="proof-num cyan">54.7%</div>
+      <div class="proof-desc">Brute-force solver, 30 episodes</div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-label">Boundary Probe After Training</div>
+      <div class="proof-num gold">100%</div>
+      <div class="proof-desc">6/6 curated boundary cases cleared</div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-label">Real GRPO Training Run</div>
+      <div class="proof-num green">25</div>
+      <div class="proof-desc">Steps on T4 GPU · 7m 33s · verified artifacts</div>
+    </div>
+  </div>
 
-                <div class="panel">
-                    <h2>Run Results</h2>
-                    <div id="run-results" class="loading">Run a solver to see reward breakdowns, outcome, and per-test execution results.</div>
-                </div>
-            </div>
+  <!-- LIVE ARENA -->
+  <div class="arena-panel">
+    <div class="arena-head">
+      <div class="live-dot"></div>
+      <span style="font-size:15px;font-weight:700;">Live Execution Arena</span>
+      <span style="font-size:13px;color:var(--muted);">WebSocket spectator — watching Red vs Blue episodes in real time</span>
+    </div>
+    <div class="arena-metrics">
+      <div class="arena-metric">
+        <div class="am-label">Status</div>
+        <div class="am-val" id="ws-status" style="font-size:20px;color:var(--green);">Connecting…</div>
+        <div class="am-sub">WebSocket stream</div>
+      </div>
+      <div class="arena-metric">
+        <div class="am-label">Latest Outcome</div>
+        <div class="am-val" id="ws-outcome" style="font-size:20px;">—</div>
+        <div class="am-sub">Setter vs Solver</div>
+      </div>
+      <div class="arena-metric">
+        <div class="am-label">Latest Reward</div>
+        <div class="am-val" id="ws-reward" style="font-size:20px;">—</div>
+        <div class="am-sub">Shaped reward</div>
+      </div>
+      <div class="arena-metric">
+        <div class="am-label">Oracle Pass Rate</div>
+        <div class="am-val" id="ws-pass-rate" style="font-size:20px;">—</div>
+        <div class="am-sub">Hidden tests</div>
+      </div>
+    </div>
+    <div class="arena-stream" id="ws-chart"></div>
+  </div>
 
-            <div class="stack">
-                <div class="panel">
-                    <h2>Training Pipeline</h2>
-                    <div class="steps" id="pipeline-steps">
-                        <div class="loading">Loading training pipeline...</div>
-                    </div>
-                </div>
+  <!-- TRAINING PROOF -->
+  <div class="section-header">
+    <h2>Training Proof</h2>
+    <span class="section-tag">Real GRPO · T4 GPU · 25 steps</span>
+  </div>
+  <div class="training-proof" style="margin-bottom:20px;">
+    <div class="proof-box">
+      <div class="pb-label">Baseline Avg Reward</div>
+      <div class="pb-val red" id="baseline-reward">+24.76</div>
+      <div class="pb-sub">Brute-force, 30 episodes</div>
+    </div>
+    <div class="proof-box highlight">
+      <div class="pb-label">GRPO Step 1 Reward</div>
+      <div class="pb-val cyan" id="trained-reward">—</div>
+      <div class="pb-sub">Real run, loading…</div>
+    </div>
+    <div class="proof-box">
+      <div class="pb-label">Baseline Boundary Probe</div>
+      <div class="pb-val red">16.7%</div>
+      <div class="pb-sub">1 / 6 cases passed</div>
+    </div>
+    <div class="proof-box highlight">
+      <div class="pb-label">Trained Boundary Probe</div>
+      <div class="pb-val green" id="trained-boundary">100%</div>
+      <div class="pb-sub">6 / 6 cases cleared</div>
+    </div>
+  </div>
 
-                <div class="panel">
-                    <h2>Benchmark Sandbox</h2>
-                    <div class="controls">
-                        <label>Episodes
-                            <input id="benchmark-episodes" type="number" min="1" max="30" value="6">
-                        </label>
-                        <label>Solver Mode
-                            <select id="benchmark-mode">
-                                <option value="brute_force">brute_force</option>
-                                <option value="reference">reference</option>
-                            </select>
-                        </label>
-                        <label>Seed
-                            <input id="benchmark-seed" type="number" value="42">
-                        </label>
-                        <label>&nbsp;
-                            <button class="primary" id="run-benchmark">Run Benchmark</button>
-                        </label>
-                    </div>
-                    <div id="benchmark-output" class="loading">Run a benchmark to compare average pass rate and reward over multiple episodes.</div>
-                </div>
+  <!-- REWARD CURVE -->
+  <div class="panel" style="margin-bottom:20px;">
+    <div class="panel-head">
+      <h3>Reward Curve — Real GRPO Run (25 steps)</h3>
+      <span class="section-tag" id="curve-tag">Loading…</span>
+    </div>
+    <div class="panel-body">
+      <div class="chart-wrap">
+        <div class="chart-bars" id="reward-chart"></div>
+        <div class="chart-axis">
+          <span>Step 0</span><span>Step 12</span><span>Step 25</span>
+        </div>
+      </div>
+      <div class="chart-legend" style="margin-top:12px;">
+        <span><span class="legend-dot" style="background:var(--cyan)"></span>Training reward per step</span>
+        <span style="color:var(--muted);font-size:12px;" id="curve-note">Chart loads from real training_history.json</span>
+      </div>
+    </div>
+  </div>
 
-                <div class="panel">
-                    <h2>Artifacts & Training Status</h2>
-                    <div id="artifacts" class="loading">Checking committed outputs and GRPO artifacts...</div>
-                </div>
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <div class="col-stack">
 
-                <div class="panel">
-                    <h2>Sample Walkthrough</h2>
-                    <div id="walkthrough" class="loading">Loading a baseline/reference comparison on one seeded episode...</div>
-                </div>
-            </div>
-        </section>
+      <!-- INTERACTIVE CONSOLE -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Interactive Environment Console</h3>
+          <span class="section-tag">Live Oracle</span>
+        </div>
+        <div class="panel-body">
+          <div class="controls-grid">
+            <label>Archetype
+              <select id="archetype">
+                <option value="">Random</option>
+                <option value="array">array</option>
+                <option value="graph">graph</option>
+                <option value="dp">dp</option>
+              </select>
+            </label>
+            <label>Task ID
+              <input id="task-id" type="number" min="0" placeholder="0 = first">
+            </label>
+            <label>Difficulty
+              <select id="difficulty">
+                <option value="1">1 — Easy</option>
+                <option value="2">2 — Medium</option>
+                <option value="3">3 — Hard</option>
+              </select>
+            </label>
+            <label>Seed
+              <input id="seed" type="number" value="42">
+            </label>
+          </div>
+          <div class="btn-row">
+            <button class="btn-sm primary" id="create-session">Create Episode</button>
+            <button class="btn-sm default" id="reset-session" disabled>Reset</button>
+            <button class="btn-sm default" id="run-bruteforce" disabled>Run Brute-Force</button>
+            <button class="btn-sm default" id="run-reference" disabled>Run Reference</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn-sm default" id="toggle-custom" disabled>↳ Custom Code</button>
+          </div>
+          <div id="custom-solver-wrap" class="hidden">
+            <label>Custom Solver (Python stdin→stdout)
+              <textarea id="custom-solver-code" placeholder="Paste Python code…"></textarea>
+            </label>
+            <div class="btn-row"><button class="btn-sm primary" id="run-custom" disabled>Run Custom</button></div>
+          </div>
+          <div id="session-meta" style="margin-top:16px;">
+            <div class="loading">No active episode.</div>
+          </div>
+        </div>
+      </div>
 
-        <section class="panel full-width">
-            <h2>Backend Endpoints</h2>
-            <table>
-                <thead>
-                    <tr><th>Endpoint</th><th>Purpose</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td><code>POST /api/session</code></td><td>Create a new episode session with optional archetype, task, and difficulty.</td></tr>
-                    <tr><td><code>POST /api/session/{id}/run</code></td><td>Execute brute-force, reference, or custom solver code against the current task.</td></tr>
-                    <tr><td><code>POST /api/benchmark</code></td><td>Evaluate a solver mode across multiple fresh episodes and summarize outcomes.</td></tr>
-                    <tr><td><code>GET /api/overview</code></td><td>Environment counts, agent roles, and training pipeline steps.</td></tr>
-                    <tr><td><code>GET /api/artifacts</code></td><td>Committed baseline/training manifests/logs/plots status.</td></tr>
-                    <tr><td><code>GET /api/spec</code></td><td>OpenEnv manifest as raw text.</td></tr>
-                </tbody>
-            </table>
-        </section>
+      <!-- CURRENT PROBLEM -->
+      <div class="panel">
+        <div class="panel-head"><h3>Current Problem</h3></div>
+        <div class="panel-body">
+          <div id="problem-card" class="loading">Create an episode to inspect the generated task.</div>
+        </div>
+      </div>
+
+      <!-- RUN RESULTS -->
+      <div class="panel">
+        <div class="panel-head"><h3>Run Results & Reward Breakdown</h3></div>
+        <div class="panel-body">
+          <div id="run-results" class="loading">Run a solver to see outcome, per-test results, and reward breakdown.</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="col-stack">
+
+      <!-- TRAINING PIPELINE -->
+      <div class="panel">
+        <div class="panel-head"><h3>Training Pipeline</h3></div>
+        <div class="panel-body">
+          <div class="step-list" id="pipeline-steps">
+            <div class="loading">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BENCHMARK SANDBOX -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Benchmark Sandbox</h3>
+          <span class="section-tag">Multi-episode</span>
+        </div>
+        <div class="panel-body">
+          <div class="controls-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <label>Episodes <input id="benchmark-episodes" type="number" min="1" max="30" value="6"></label>
+            <label>Solver Mode
+              <select id="benchmark-mode">
+                <option value="brute_force">brute_force</option>
+                <option value="reference">reference</option>
+              </select>
+            </label>
+            <label>Seed <input id="benchmark-seed" type="number" value="42"></label>
+            <label>&nbsp;<button class="btn-sm primary" id="run-benchmark" style="width:100%;margin-top:2px;">Run</button></label>
+          </div>
+          <div id="benchmark-output" class="loading">Run a benchmark to compare pass rate and reward across episodes.</div>
+        </div>
+      </div>
+
+      <!-- ARTIFACTS -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Artifacts & Training Status</h3>
+          <span class="section-tag" id="artifact-tag">Checking…</span>
+        </div>
+        <div class="panel-body">
+          <div id="artifacts" class="loading">Loading…</div>
+        </div>
+      </div>
+
+      <!-- WALKTHROUGH -->
+      <div class="panel">
+        <div class="panel-head"><h3>Sample Walkthrough</h3></div>
+        <div class="panel-body">
+          <div id="walkthrough" class="loading">Loading baseline vs reference comparison…</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ENDPOINTS -->
+  <div class="panel">
+    <div class="panel-head"><h3>Backend Endpoints</h3></div>
+    <div class="panel-body">
+      <table>
+        <thead><tr><th>Endpoint</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>POST /api/session</code></td><td>Create a new episode with optional archetype, task, difficulty</td></tr>
+          <tr><td><code>POST /api/session/{id}/run</code></td><td>Execute brute-force, reference, or custom solver code</td></tr>
+          <tr><td><code>POST /api/benchmark</code></td><td>Multi-episode pass rate and reward comparison</td></tr>
+          <tr><td><code>GET /api/overview</code></td><td>Environment counts, agent roles, pipeline steps</td></tr>
+          <tr><td><code>GET /api/artifacts</code></td><td>Committed baseline / training manifest / plots status</td></tr>
+          <tr><td><code>GET /api/spec</code></td><td>OpenEnv manifest (raw)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let sessionId = null;
+
+const $ = id => document.getElementById(id);
+const fmtPct = v => `${(v * 100).toFixed(1)}%`;
+const pretty = v => JSON.stringify(v, null, 2);
+
+async function fetchJSON(url, opts = {}) {
+  const r = await fetch(url, { headers: {'Content-Type': 'application/json'}, ...opts });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.detail || `${url} → ${r.status}`);
+  return d;
+}
+
+// ── REWARD CHART ──
+function buildRewardChart(steps) {
+  const el = $('reward-chart');
+  el.innerHTML = '';
+  const vals = steps.map(s => s.reward);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const range = max - min || 1;
+  vals.forEach((v, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'chart-bar';
+    const pct = ((v - min) / range) * 90 + 10;
+    bar.style.height = pct + '%';
+    bar.style.background = v > -10
+      ? 'var(--green)'
+      : v > -20
+        ? 'var(--cyan)'
+        : 'rgba(0,212,255,0.3)';
+    bar.title = `Step ${i+1}: reward ${v.toFixed(2)}`;
+    el.appendChild(bar);
+  });
+  const first = vals[0], last = vals[vals.length-1];
+  const improved = last > first;
+  $('curve-tag').textContent = improved ? '↑ Reward improving' : 'Training in progress';
+  $('curve-tag').style.color = improved ? 'var(--green)' : 'var(--cyan)';
+  $('curve-note').textContent = `Step 1: ${first.toFixed(2)} → Step ${vals.length}: ${last.toFixed(2)}`;
+}
+
+// ── LIVE WEBSOCKET ──
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${proto}//${location.host}/ws/arena`);
+  const statusEl = $('ws-status'), outcomeEl = $('ws-outcome');
+  const rewardEl = $('ws-reward'), passEl = $('ws-pass-rate');
+  const chartEl = $('ws-chart');
+
+  ws.onopen = () => {
+    statusEl.textContent = 'Live';
+    statusEl.style.color = 'var(--green)';
+  };
+  ws.onclose = () => {
+    statusEl.textContent = 'Reconnecting…';
+    statusEl.style.color = 'var(--muted)';
+    setTimeout(connectWS, 5000);
+  };
+  ws.onmessage = e => {
+    const d = JSON.parse(e.data);
+    const win = d.outcome === 'solver_wins';
+    outcomeEl.textContent = win ? 'Solver Wins ✓' : 'Setter Wins';
+    outcomeEl.style.color = win ? 'var(--green)' : 'var(--red)';
+    rewardEl.textContent = d.reward.toFixed(2);
+    rewardEl.style.color = d.reward > 0 ? 'var(--green)' : 'var(--red)';
+    passEl.textContent = fmtPct(d.pass_rate);
+
+    const bar = document.createElement('div');
+    const h = Math.max(8, Math.min(100, (d.reward + 50)));
+    bar.style.cssText = `height:${h}%;width:16px;border-radius:3px 3px 0 0;flex-shrink:0;background:${win ? 'var(--green)' : 'var(--red)'};`;
+    bar.title = `Reward: ${d.reward.toFixed(2)}`;
+    chartEl.appendChild(bar);
+    if (chartEl.children.length > 60) chartEl.removeChild(chartEl.firstChild);
+  };
+}
+
+// ── RENDER HELPERS ──
+function renderMetrics(o) {
+  document.getElementById('metrics'); // unused if not needed
+}
+
+function renderPipeline(o) {
+  $('pipeline-steps').innerHTML = o.training_pipeline.map((s, i) => `
+    <div class="step-item">
+      <div class="step-num">${i+1}</div>
+      <div class="step-body">${s}</div>
+    </div>
+  `).join('');
+}
+
+function renderArtifacts(data) {
+  const chips = [
+    ['Baseline', data.baseline_available],
+    ['Manifest', data.training_manifest_available],
+    ['GRPO logs', data.training_log_available],
+    ['Summary', data.training_summary_available],
+    ['Plots', data.plots_available],
+  ];
+  $('artifact-tag').textContent = chips.every(c => c[1]) ? 'All found ✓' : 'Some missing';
+  $('artifact-tag').style.color = chips.every(c => c[1]) ? 'var(--green)' : 'var(--gold)';
+
+  const m = data.latest_training_metrics;
+  const ev = data.evaluation_summary;
+  const cap = data.capability_eval;
+
+  $('artifacts').innerHTML = `
+    <div class="artifact-row">
+      ${chips.map(([label, ok]) => `
+        <div class="artifact-chip ${ok ? 'found' : 'missing'}">
+          ${ok ? '✓' : '✗'} ${label}
+        </div>
+      `).join('')}
     </div>
 
-    <script>
-        let sessionId = null;
-        let useCustom = false;
+    <div class="list-item">
+      <h4>Latest Training Metrics</h4>
+      <div class="badge-row">
+        <span class="badge cyan">Reward: ${m.reward ?? 'n/a'}</span>
+        <span class="badge">Pass Rate: ${m.reward_pass_rate == null ? 'n/a' : fmtPct(m.reward_pass_rate)}</span>
+      </div>
+    </div>
 
-        const fmtPct = (value) => `${(value * 100).toFixed(1)}%`;
-        const pretty = (value) => JSON.stringify(value, null, 2);
+    <div class="list-item">
+      <h4>Proof of Improvement</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
+        <div>
+          <div style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Baseline</div>
+          <div>Pass rate: ${data.baseline_summary?.avg_solver_pass_rate == null ? 'n/a' : fmtPct(data.baseline_summary.avg_solver_pass_rate)}</div>
+          <div>Reward: ${data.baseline_summary?.avg_solver_reward?.toFixed(2) ?? 'n/a'}</div>
+        </div>
+        <div>
+          <div style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Trained</div>
+          <div style="color:var(--green)">Pass rate: ${ev?.trained_pass_rate == null ? 'n/a' : fmtPct(ev.trained_pass_rate)}</div>
+          <div style="color:var(--green)">Reward: ${ev?.trained_reward?.toFixed(2) ?? 'n/a'}</div>
+        </div>
+      </div>
+    </div>
 
-        async function fetchJSON(url, options = {}) {
-            const response = await fetch(url, {
-                headers: { "Content-Type": "application/json" },
-                ...options
-            });
-            const payload = await response.json();
-            if (!response.ok) {
-                throw new Error(payload.detail || `${url} failed: ${response.status}`);
-            }
-            return payload;
-        }
+    ${cap ? `
+    <div class="list-item">
+      <h4>Boundary-Condition Capability Probe</h4>
+      <div class="badge-row">
+        <span class="badge">Suite: ${cap.summary.suite_name}</span>
+        <span class="badge red">Before: ${fmtPct(cap.summary.baseline_pass_rate)}</span>
+        <span class="badge green">After: ${fmtPct(cap.summary.trained_pass_rate)}</span>
+        <span class="badge cyan">+${cap.summary.improved_case_count} cases improved</span>
+      </div>
+      <div style="color:var(--dim);font-size:13px;margin-top:6px;">${cap.summary.claim}</div>
+    </div>
+    ` : ''}
 
-        function getSessionPayload() {
-            const archetype = document.getElementById("archetype").value || null;
-            const rawTaskId = document.getElementById("task-id").value.trim();
-            const taskId = rawTaskId === "" ? null : Number(rawTaskId);
-            return {
-                archetype,
-                task_id: Number.isNaN(taskId) ? null : taskId,
-                difficulty: Number(document.getElementById("difficulty").value),
-                seed: Number(document.getElementById("seed").value || 42)
-            };
-        }
+    <div class="list-item">
+      <h4>Plot Files</h4>
+      <div style="color:var(--dim);font-size:13px;">${data.plot_files.length ? data.plot_files.join(' · ') : 'None yet'}</div>
+    </div>
+  `;
 
-        function renderMetrics(overview) {
-            const cards = [
-                { label: "Environment", value: overview.environment.name, sub: `v${overview.environment.version}` },
-                { label: "Archetypes", value: overview.environment.archetype_count, sub: `${overview.environment.agent_count} competing agents` },
-                { label: "Tasks", value: overview.environment.task_count, sub: "Across array, graph, and DP" },
-                { label: "Difficulty", value: overview.environment.difficulty_tiers, sub: "Curriculum tiers" }
-            ];
-            document.getElementById("metrics").innerHTML = cards.map(card => `
-                <div class="metric-card">
-                    <div class="metric-label">${card.label}</div>
-                    <div class="metric-value">${card.value}</div>
-                    <div class="metric-sub">${card.sub}</div>
-                </div>
-            `).join("");
-        }
+  // Update training proof boxes
+  if (m.reward != null) {
+    $('trained-reward').textContent = Number(m.reward).toFixed(2);
+  }
+}
 
-        function renderPipeline(overview) {
-            document.getElementById("pipeline-steps").innerHTML = overview.training_pipeline.map((step, index) => `
-                <div class="step">
-                    <div class="step-index">${index + 1}</div>
-                    <div class="list-item">${step}</div>
-                </div>
-            `).join("");
-        }
+function renderWalkthrough(data) {
+  $('walkthrough').innerHTML = `
+    <div class="list-item">
+      <h4>${data.problem.title}</h4>
+      <div class="badge-row">
+        <span class="badge">${data.problem.archetype}</span>
+        <span class="badge">Task ${data.problem.task_id}</span>
+        <span class="badge">Diff ${data.problem.difficulty}</span>
+      </div>
+      <div style="font-size:13px;color:var(--dim);margin-top:6px;">${data.problem.description}</div>
+    </div>
+    ${data.runs.map(run => `
+      <div class="list-item">
+        <h4>${run.label}</h4>
+        <div class="badge-row">
+          <span class="badge">${run.solver_mode}</span>
+          <span class="badge ${run.outcome === 'solver_wins' ? 'green' : 'red'}">${run.outcome}</span>
+          <span class="badge">${fmtPct(run.solver_pass_rate)} pass</span>
+          <span class="badge cyan">reward ${run.solver_reward}</span>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
 
-        function renderSessionState(state) {
-            document.getElementById("session-meta").innerHTML = `
-                <div class="list-item">
-                    <h3>Session ${sessionId}</h3>
-                    <div class="badge-row">
-                        <span class="badge">Episode ${state.episode_id}</span>
-                        <span class="badge">Archetype: ${state.archetype}</span>
-                        <span class="badge">Task ID: ${state.task_id}</span>
-                        <span class="badge">Difficulty: ${state.difficulty}/3</span>
-                    </div>
-                    <div class="split">
-                        <div>Setter reward: ${state.setter_reward}</div>
-                        <div>Solver reward: ${state.solver_reward}</div>
-                    </div>
-                    <div class="muted">Outcome: ${state.outcome}</div>
-                </div>
-                <div class="list-item">
-                    <h3>Elo Snapshot</h3>
-                    <div class="split">
-                        <div>Setter Elo: ${state.elo.setter_elo}</div>
-                        <div>Solver Elo: ${state.elo.solver_elo}</div>
-                    </div>
-                    <div class="muted">${state.rendered}</div>
-                </div>
-            `;
+function renderBenchmark(data) {
+  $('benchmark-output').innerHTML = `
+    <div class="badge-row" style="margin-bottom:12px;">
+      <span class="badge">${data.solver_mode}</span>
+      <span class="badge cyan">Avg pass: ${fmtPct(data.summary.avg_solver_pass_rate)}</span>
+      <span class="badge">Avg reward: ${data.summary.avg_solver_reward.toFixed(2)}</span>
+      <span class="badge">Solver wins: ${fmtPct(data.summary.solver_win_rate)}</span>
+    </div>
+    <table>
+      <thead><tr><th>Ep</th><th>Task</th><th>Outcome</th><th>Pass Rate</th><th>Reward</th></tr></thead>
+      <tbody>
+        ${data.episodes.map(ep => `
+          <tr>
+            <td>${ep.episode}</td>
+            <td>${ep.archetype}/${ep.task_id}</td>
+            <td class="${ep.outcome === 'solver_wins' ? 'status-good' : 'status-bad'}">${ep.outcome}</td>
+            <td>${fmtPct(ep.solver_pass_rate)}</td>
+            <td>${ep.solver_reward}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
 
-            const problem = state.problem;
-            document.getElementById("problem-card").innerHTML = `
-                <div class="list">
-                    <div class="list-item">
-                        <h3>${problem.title}</h3>
-                        <div class="badge-row">
-                            <span class="badge">Complexity: ${problem.optimal_complexity}</span>
-                            <span class="badge">Public Cases: ${problem.public_test_count}</span>
-                            <span class="badge">Hidden Cases: ${problem.hidden_test_count}</span>
-                        </div>
-                        <div class="muted">${problem.constraints}</div>
-                        <p>${problem.description}</p>
-                    </div>
-                    <div class="split">
-                        <div class="list-item">
-                            <h3>Input Format</h3>
-                            <div class="codebox">${problem.input_format}</div>
-                        </div>
-                        <div class="list-item">
-                            <h3>Output Format</h3>
-                            <div class="codebox">${problem.output_format}</div>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <h3>Representative Test Cases</h3>
-                        ${problem.public_test_cases.map((test, index) => `<div class="codebox"><strong>Public Case ${index + 1}</strong>\nInput:\n${test.input}\n\nExpected:\n${test.expected}</div>`).join("")}
-                    </div>
-                </div>
-            `;
-        }
+function renderSession(state) {
+  $('session-meta').innerHTML = `
+    <div class="list-item">
+      <div class="badge-row">
+        <span class="badge cyan">Session ${sessionId}</span>
+        <span class="badge">${state.archetype}</span>
+        <span class="badge">Task ${state.task_id}</span>
+        <span class="badge">Diff ${state.difficulty}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:13px;">
+        <div>Setter reward: <strong>${state.setter_reward}</strong></div>
+        <div>Solver reward: <strong>${state.solver_reward}</strong></div>
+        <div>Outcome: <strong class="${state.outcome === 'solver_wins' ? 'status-good' : 'status-bad'}">${state.outcome}</strong></div>
+        <div>Setter Elo: ${state.elo?.setter_elo} · Solver: ${state.elo?.solver_elo}</div>
+      </div>
+    </div>
+  `;
+  const p = state.problem;
+  $('problem-card').innerHTML = `
+    <div class="list-item">
+      <h4>${p.title}</h4>
+      <div class="badge-row">
+        <span class="badge">${p.optimal_complexity}</span>
+        <span class="badge">${p.public_test_count} public</span>
+        <span class="badge">${p.hidden_test_count} hidden</span>
+      </div>
+      <div style="font-size:13px;color:var(--dim);margin-top:8px;">${p.description}</div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted);">${p.constraints}</div>
+      ${p.public_test_cases.slice(0, 2).map((t, i) => `
+        <div class="result-box" style="margin-top:8px;">Case ${i+1}:\nInput: ${t.input}\nExpected: ${t.expected}</div>
+      `).join('')}
+    </div>
+  `;
+}
 
-        function renderRunResult(payload) {
-            const state = payload.session_state;
-            const info = payload.info;
-            const solverResult = state.solver_result;
-            const setterResult = state.setter_result;
+function renderRunResult(payload) {
+  const state = payload.session_state;
+  const info = payload.info;
+  const sr = state.solver_result;
+  $('run-results').innerHTML = `
+    <div class="badge-row" style="margin-bottom:12px;">
+      <span class="badge ${info.outcome === 'solver_wins' ? 'green' : 'red'}">${info.outcome}</span>
+      <span class="badge">Public: ${fmtPct(info.solver_public_pass_rate)}</span>
+      <span class="badge">Hidden: ${fmtPct(info.solver_hidden_pass_rate)}</span>
+    </div>
+    <div class="compare-grid">
+      <div class="list-item"><h4>Setter Reward</h4><div class="result-box">${pretty(payload.setter_reward_info)}</div></div>
+      <div class="list-item"><h4>Solver Reward</h4><div class="result-box">${pretty(payload.solver_reward_info)}</div></div>
+      <div class="list-item"><h4>Setter Code</h4><div class="result-box">${state.setter_code || 'n/a'}</div></div>
+      <div class="list-item"><h4>Solver Code</h4><div class="result-box">${state.solver_code || 'n/a'}</div></div>
+    </div>
+    ${sr ? `
+    <div class="list-item" style="margin-top:10px;">
+      <h4>Oracle Results</h4>
+      <table>
+        <thead><tr><th>Test</th><th>Status</th><th>Passed</th><th>Time</th></tr></thead>
+        <tbody>
+          ${sr.results.map(r => `<tr>
+            <td>${r.test_id}</td><td>${r.status}</td>
+            <td class="${r.passed ? 'status-good' : 'status-bad'}">${r.passed}</td>
+            <td>${r.execution_time.toFixed(3)}s</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : ''}
+  `;
+}
 
-            const resultTable = solverResult ? `
-                <table>
-                    <thead><tr><th>Test</th><th>Status</th><th>Passed</th><th>Time</th><th>stderr</th></tr></thead>
-                    <tbody>
-                        ${solverResult.results.map(row => `
-                            <tr>
-                                <td>${row.test_id}</td>
-                                <td>${row.status}</td>
-                                <td>${row.passed}</td>
-                                <td>${row.execution_time.toFixed(4)}s</td>
-                                <td>${row.stderr || "-"}</td>
-                            </tr>
-                        `).join("")}
-                    </tbody>
-                </table>
-            ` : "<div class='muted'>No solver results yet.</div>";
+function setControls(on) {
+  ['reset-session','run-bruteforce','run-reference','toggle-custom','run-custom'].forEach(id => {
+    const el = $(id); if (el) el.disabled = !on;
+  });
+}
 
-            document.getElementById("run-results").innerHTML = `
-                <div class="list">
-                    <div class="list-item">
-                        <h3>Outcome</h3>
-                        <div class="badge-row">
-                            <span class="badge ${info.outcome === "solver_wins" ? "status-good" : info.outcome === "setter_wins" ? "status-bad" : ""}">${info.outcome}</span>
-                            <span class="badge">Public pass rate: ${fmtPct(info.solver_public_pass_rate)}</span>
-                            <span class="badge">Hidden pass rate: ${fmtPct(info.solver_hidden_pass_rate)}</span>
-                            <span class="badge">Setter pass rate: ${fmtPct(info.setter_pass_rate)}</span>
-                            <span class="badge">Setter valid: ${info.setter_valid}</span>
-                        </div>
-                        ${info.validation_errors.length ? `<div class="muted">Validation errors: ${info.validation_errors.join(", ")}</div>` : ""}
-                        ${info.validation_warnings && info.validation_warnings.length ? `<div class="muted">Validation warnings: ${info.validation_warnings.join(", ")}</div>` : ""}
-                    </div>
-                    <div class="split">
-                        <div class="list-item">
-                            <h3>Setter Reward Breakdown</h3>
-                            <pre>${pretty(payload.setter_reward_info)}</pre>
-                        </div>
-                        <div class="list-item">
-                            <h3>Solver Reward Breakdown</h3>
-                            <pre>${pretty(payload.solver_reward_info)}</pre>
-                        </div>
-                    </div>
-                    <div class="split">
-                        <div class="list-item">
-                            <h3>Setter Code</h3>
-                            <pre>${state.setter_code || "n/a"}</pre>
-                        </div>
-                        <div class="list-item">
-                            <h3>Solver Code</h3>
-                            <pre>${state.solver_code || "n/a"}</pre>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <h3>Oracle Test Results</h3>
-                        ${resultTable}
-                    </div>
-                    <div class="split">
-                        <div class="list-item">
-                            <h3>Setter Result</h3>
-                            <pre>${pretty(setterResult)}</pre>
-                        </div>
-                        <div class="list-item">
-                            <h3>Solver Result</h3>
-                            <pre>${pretty(solverResult)}</pre>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+// ── EVENTS ──
+$('create-session').addEventListener('click', async () => {
+  try {
+    const d = await fetchJSON('/api/session', { method:'POST', body: JSON.stringify({
+      archetype: $('archetype').value || null,
+      task_id: $('task-id').value ? Number($('task-id').value) : null,
+      difficulty: Number($('difficulty').value),
+      seed: Number($('seed').value || 42)
+    })});
+    sessionId = d.session_id;
+    setControls(true);
+    renderSession(d.state);
+    $('run-results').innerHTML = '<div class="loading">Episode ready. Run a solver.</div>';
+  } catch(e) { alert(e.message); }
+});
 
-        function renderArtifacts(data) {
-            document.getElementById("artifacts").innerHTML = `
-                <div class="list">
-                    <div class="list-item">
-                        <h3>Artifact Presence</h3>
-                        <div class="badge-row">
-                            <span class="badge ${data.baseline_available ? "status-good" : "status-bad"}">Baseline ${data.baseline_available ? "found" : "missing"}</span>
-                            <span class="badge ${data.training_manifest_available ? "status-good" : "status-bad"}">Manifest ${data.training_manifest_available ? "found" : "missing"}</span>
-                            <span class="badge ${data.training_log_available ? "status-good" : "status-bad"}">GRPO logs ${data.training_log_available ? "found" : "missing"}</span>
-                            <span class="badge ${data.training_summary_available ? "status-good" : "status-bad"}">Summary ${data.training_summary_available ? "found" : "missing"}</span>
-                            <span class="badge ${data.plots_available ? "status-good" : "status-bad"}">Plots ${data.plots_available ? "found" : "missing"}</span>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <h3>Latest Training Metrics</h3>
-                        <div class="split">
-                            <div>Reward: ${data.latest_training_metrics.reward ?? "n/a"}</div>
-                            <div>Pass Rate: ${data.latest_training_metrics.reward_pass_rate == null ? "n/a" : fmtPct(data.latest_training_metrics.reward_pass_rate)}</div>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <h3>Proof of Improvement</h3>
-                        <div class="split">
-                            <div>Baseline pass rate: ${data.baseline_summary?.avg_solver_pass_rate == null ? "n/a" : fmtPct(data.baseline_summary.avg_solver_pass_rate)}</div>
-                            <div>Trained pass rate: ${data.evaluation_summary?.trained_pass_rate == null ? "n/a" : fmtPct(data.evaluation_summary.trained_pass_rate)}</div>
-                            <div>Baseline reward: ${data.baseline_summary?.avg_solver_reward == null ? "n/a" : data.baseline_summary.avg_solver_reward.toFixed(2)}</div>
-                            <div>Trained reward: ${data.evaluation_summary?.trained_reward == null ? "n/a" : data.evaluation_summary.trained_reward.toFixed(2)}</div>
-                        </div>
-                        <div class="muted">Robustness metric: ${data.evaluation_summary?.trained_robustness == null ? "n/a" : data.evaluation_summary.trained_robustness.toFixed(2)}</div>
-                    </div>
-                    <div class="list-item">
-                        <h3>Capability Probe</h3>
-                        ${data.capability_eval ? `
-                            <div class="split">
-                                <div>Suite: ${data.capability_eval.summary.suite_name}</div>
-                                <div>Baseline: ${fmtPct(data.capability_eval.summary.baseline_pass_rate)}</div>
-                                <div>Trained: ${fmtPct(data.capability_eval.summary.trained_pass_rate)}</div>
-                                <div>Improved cases: ${data.capability_eval.summary.improved_case_count}</div>
-                            </div>
-                            <div class="muted">${data.capability_eval.summary.claim}</div>
-                            <div class="muted">${data.capability_eval.summary.improved_cases.length ? data.capability_eval.summary.improved_cases.map(item => item.case_id).join(", ") : "No improved cases recorded yet."}</div>
-                        ` : `
-                            <div>No boundary-condition capability probe committed yet.</div>
-                        `}
-                    </div>
-                    <div class="list-item">
-                        <h3>Manifest</h3>
-                        <pre>${data.training_manifest ? pretty(data.training_manifest) : "No training manifest committed yet."}</pre>
-                    </div>
-                    <div class="list-item">
-                        <h3>Plot Files</h3>
-                        <div>${data.plot_files.length ? data.plot_files.join(", ") : "No plots available yet."}</div>
-                    </div>
-                </div>
-            `;
-        }
+$('reset-session').addEventListener('click', async () => {
+  if (!sessionId) return;
+  try {
+    const d = await fetchJSON(`/api/session/${sessionId}/reset`, { method:'POST', body: JSON.stringify({
+      difficulty: Number($('difficulty').value), seed: Number($('seed').value || 42)
+    })});
+    renderSession(d.state);
+  } catch(e) { alert(e.message); }
+});
 
-        function renderWalkthrough(data) {
-            document.getElementById("walkthrough").innerHTML = `
-                <div class="list">
-                    <div class="list-item">
-                        <h3>${data.problem.title}</h3>
-                        <div class="badge-row">
-                            <span class="badge">Archetype: ${data.problem.archetype}</span>
-                            <span class="badge">Task ID: ${data.problem.task_id}</span>
-                            <span class="badge">Difficulty: ${data.problem.difficulty}</span>
-                        </div>
-                        <p>${data.problem.description}</p>
-                    </div>
-                    ${data.runs.map(run => `
-                        <div class="list-item">
-                            <h3>${run.label}</h3>
-                            <div class="badge-row">
-                                <span class="badge">Mode: ${run.solver_mode}</span>
-                                <span class="badge ${run.outcome === "solver_wins" ? "status-good" : "status-bad"}">Outcome: ${run.outcome}</span>
-                                <span class="badge">Pass Rate: ${fmtPct(run.solver_pass_rate)}</span>
-                                <span class="badge">Reward: ${run.solver_reward}</span>
-                            </div>
-                        </div>
-                    `).join("")}
-                </div>
-            `;
-        }
+async function runSolver(mode) {
+  if (!sessionId) return;
+  try {
+    const d = await fetchJSON(`/api/session/${sessionId}/run`, { method:'POST', body: JSON.stringify({
+      solver_mode: mode,
+      solver_code: mode === 'custom' ? $('custom-solver-code').value : null
+    })});
+    renderSession(d.session_state);
+    renderRunResult(d);
+  } catch(e) { alert(e.message); }
+}
+$('run-bruteforce').addEventListener('click', () => runSolver('brute_force'));
+$('run-reference').addEventListener('click', () => runSolver('reference'));
+$('run-custom').addEventListener('click', () => runSolver('custom'));
 
-        function renderBenchmark(data) {
-            document.getElementById("benchmark-output").innerHTML = `
-                <div class="list">
-                    <div class="list-item">
-                        <h3>Benchmark Summary</h3>
-                        <div class="badge-row">
-                            <span class="badge">Mode: ${data.solver_mode}</span>
-                            <span class="badge">Avg Pass Rate: ${fmtPct(data.summary.avg_solver_pass_rate)}</span>
-                            <span class="badge">Avg Reward: ${data.summary.avg_solver_reward.toFixed(2)}</span>
-                            <span class="badge">Solver Win Rate: ${fmtPct(data.summary.solver_win_rate)}</span>
-                            <span class="badge">Invalid Rate: ${fmtPct(data.summary.invalid_rate ?? 0)}</span>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <h3>Episode Breakdown</h3>
-                        <table>
-                            <thead><tr><th>Episode</th><th>Task</th><th>Outcome</th><th>Pass Rate</th><th>Reward</th></tr></thead>
-                            <tbody>
-                                ${data.episodes.map(ep => `
-                                    <tr>
-                                        <td>${ep.episode}</td>
-                                        <td>${ep.archetype}/${ep.task_id}</td>
-                                        <td>${ep.outcome}</td>
-                                        <td>${fmtPct(ep.solver_pass_rate)}</td>
-                                        <td>${ep.solver_reward}</td>
-                                    </tr>
-                                `).join("")}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
+$('toggle-custom').addEventListener('click', () => {
+  $('custom-solver-wrap').classList.toggle('hidden');
+});
 
-        function setSessionControls(enabled) {
-            document.getElementById("reset-session").disabled = !enabled;
-            document.getElementById("run-bruteforce").disabled = !enabled;
-            document.getElementById("run-reference").disabled = !enabled;
-            document.getElementById("toggle-custom").disabled = !enabled;
-            document.getElementById("run-custom").disabled = !enabled;
-        }
+$('run-benchmark').addEventListener('click', async () => {
+  $('benchmark-output').innerHTML = '<div class="loading">Running…</div>';
+  try {
+    const d = await fetchJSON('/api/benchmark', { method:'POST', body: JSON.stringify({
+      episodes: Number($('benchmark-episodes').value || 6),
+      solver_mode: $('benchmark-mode').value,
+      seed: Number($('benchmark-seed').value || 42)
+    })});
+    renderBenchmark(d);
+  } catch(e) { alert(e.message); }
+});
 
-        function connectLiveArena() {
-            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const ws = new WebSocket(`${protocol}//${location.host}/ws/arena`);
-            const statusEl = document.getElementById("ws-status");
-            const outcomeEl = document.getElementById("ws-outcome");
-            const rewardEl = document.getElementById("ws-reward");
-            const passRateEl = document.getElementById("ws-pass-rate");
-            const arenaEl = document.getElementById("live-arena");
-            const chartEl = document.getElementById("ws-chart");
+// ── BOOT ──
+async function boot() {
+  try {
+    const [overview, artifacts, walkthrough] = await Promise.all([
+      fetchJSON('/api/overview'),
+      fetchJSON('/api/artifacts'),
+      fetchJSON('/api/walkthrough')
+    ]);
+    renderPipeline(overview);
+    renderArtifacts(artifacts);
+    renderWalkthrough(walkthrough);
 
-            ws.onopen = () => {
-                statusEl.textContent = "Live";
-                statusEl.style.color = "var(--good)";
-            };
+    // Load reward chart from training history
+    try {
+      const hist = await fetchJSON('/outputs/training_history.json');
+      if (Array.isArray(hist) && hist.length > 0) buildRewardChart(hist);
+    } catch (_) {
+      $('curve-tag').textContent = 'Commit training_history.json to see curve';
+    }
 
-            ws.onclose = () => {
-                statusEl.textContent = "Disconnected";
-                statusEl.style.color = "var(--bad)";
-                setTimeout(connectLiveArena, 5000);
-            };
-
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                
-                outcomeEl.textContent = data.outcome === "solver_wins" ? "Solver Wins" : "Setter Wins";
-                outcomeEl.style.color = data.outcome === "solver_wins" ? "var(--good)" : "var(--bad)";
-                rewardEl.textContent = data.reward.toFixed(2);
-                passRateEl.textContent = fmtPct(data.pass_rate);
-
-                arenaEl.style.background = data.outcome === "solver_wins" ? "rgba(83, 209, 141, 0.15)" : "rgba(255, 107, 107, 0.15)";
-                setTimeout(() => { arenaEl.style.background = "rgba(19, 26, 45, 0.92)"; }, 500);
-
-                const bar = document.createElement("div");
-                const height = Math.max(5, Math.min(100, (data.reward + 50))); 
-                bar.style.height = `${height}%`;
-                bar.style.width = "20px";
-                bar.style.background = data.outcome === "solver_wins" ? "var(--good)" : "var(--bad)";
-                bar.style.borderRadius = "4px 4px 0 0";
-                bar.title = `Reward: ${data.reward.toFixed(2)} | Pass Rate: ${fmtPct(data.pass_rate)}`;
-                chartEl.appendChild(bar);
-
-                if (chartEl.children.length > 50) {
-                    chartEl.removeChild(chartEl.firstChild);
-                }
-            };
-        }
-
-        async function createSession() {
-            const payload = getSessionPayload();
-            const data = await fetchJSON("/api/session", {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            sessionId = data.session_id;
-            setSessionControls(true);
-            renderSessionState(data.state);
-            document.getElementById("run-results").innerHTML = "<div class='loading'>Episode ready. Run a solver to inspect the full step outcome.</div>";
-        }
-
-        async function resetSession() {
-            if (!sessionId) return;
-            const payload = getSessionPayload();
-            const data = await fetchJSON(`/api/session/${sessionId}/reset`, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            renderSessionState(data.state);
-            document.getElementById("run-results").innerHTML = "<div class='loading'>Episode reset. Run a solver to inspect the full step outcome.</div>";
-        }
-
-        async function runSolver(mode) {
-            if (!sessionId) return;
-            const payload = {
-                solver_mode: mode,
-                solver_code: mode === "custom" ? document.getElementById("custom-solver-code").value : null
-            };
-            const data = await fetchJSON(`/api/session/${sessionId}/run`, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            renderSessionState(data.session_state);
-            renderRunResult(data);
-        }
-
-        async function runBenchmark() {
-            const payload = {
-                episodes: Number(document.getElementById("benchmark-episodes").value || 6),
-                solver_mode: document.getElementById("benchmark-mode").value,
-                seed: Number(document.getElementById("benchmark-seed").value || 42)
-            };
-            document.getElementById("benchmark-output").innerHTML = "<div class='loading'>Running benchmark...</div>";
-            const data = await fetchJSON("/api/benchmark", {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            renderBenchmark(data);
-        }
-
-        function toggleCustom() {
-            useCustom = !useCustom;
-            document.getElementById("custom-solver-wrap").classList.toggle("hidden", !useCustom);
-        }
-
-        async function boot() {
-            try {
-                const [overview, artifacts, walkthrough] = await Promise.all([
-                    fetchJSON("/api/overview"),
-                    fetchJSON("/api/artifacts"),
-                    fetchJSON("/api/walkthrough")
-                ]);
-                renderMetrics(overview);
-                renderPipeline(overview);
-                renderArtifacts(artifacts);
-                renderWalkthrough(walkthrough);
-                connectLiveArena();
-            } catch (error) {
-                document.body.insertAdjacentHTML("beforeend", `<div style="padding:20px;color:#ff6b6b;">${error.message}</div>`);
-            }
-        }
-
-        document.getElementById("create-session").addEventListener("click", () => createSession().catch(alert));
-        document.getElementById("reset-session").addEventListener("click", () => resetSession().catch(alert));
-        document.getElementById("run-bruteforce").addEventListener("click", () => runSolver("brute_force").catch(alert));
-        document.getElementById("run-reference").addEventListener("click", () => runSolver("reference").catch(alert));
-        document.getElementById("run-custom").addEventListener("click", () => runSolver("custom").catch(alert));
-        document.getElementById("run-benchmark").addEventListener("click", () => runBenchmark().catch(alert));
-        document.getElementById("toggle-custom").addEventListener("click", toggleCustom);
-
-        boot();
-    </script>
+    connectWS();
+  } catch(e) {
+    console.error(e);
+    document.body.insertAdjacentHTML('beforeend',
+      `<div style="padding:20px;color:var(--red);font-family:var(--mono)">${e.message}</div>`);
+  }
+}
+boot();
+</script>
 </body>
 </html>
