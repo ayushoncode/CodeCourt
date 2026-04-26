@@ -93,7 +93,7 @@ Real software infrastructure doesn't fail on known problems. It fails on:
 
 ## 📈 Reward Curve — 100-Step GRPO
 
-![Training Curves](outputs/plots/training_curves (1).png)
+![Training Curves](outputs/plots/training_curves1.png)
 
 **Step 1:** -9.25 → **Best:** +34.31 (step 34) → **Step 100:** -13.13
 
