@@ -22,7 +22,17 @@ license: mit
 *"Most coding benchmarks test what the model has memorized. CodeCourt tests what happens when another LLM is actively trying to break it."*
 
 </div>
+## ⚔️ Enter the Arena
 
+| Material | Link |
+|---------|------|
+| 🤗 HF Space (Live Environment) | [your-username/codecourt](YOUR_HF_SPACE_LINK) |
+| 🖥️ Live Arena Dashboard | [Open Arena →](YOUR_DASHBOARD_LINK) |
+| 🧠 Trained Model (GRPO v1) | [your-username/codecourt-model](YOUR_MODEL_LINK) |
+| 📓 Training Notebook (Colab) | [Open in Google Colab](YOUR_COLAB_LINK) |
+| 📝 Write-up / Blog | [Read Blog](Blog.md) |
+| 🎬 Demo Video (YouTube) | [Watch on YouTube →](YOUR_YOUTUBE_LINK) |
+| 💻 GitHub Source | [your-username/CodeCourt](YOUR_GITHUB_LINK) |
 ---
 
 ## 🎯 The Problem Nobody Is Solving
