@@ -17,7 +17,7 @@ license: mit
 [![Live Arena](https://img.shields.io/badge/⚔️%20Live%20Arena-HF%20Space-orange?style=for-the-badge)](https://huggingface.co/spaces/ayussssssiiii/codecourt)
 [![Trained Model](https://img.shields.io/badge/🧠%20Trained%20Model-GRPO%20v1-green?style=for-the-badge)](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1)
 [![Colab](https://img.shields.io/badge/📓%20Training-Colab%20Notebook-yellow?style=for-the-badge)](https://colab.research.google.com/github/ayushoncode/CodeCourt/blob/main/notebooks/train_codecourt.ipynb)
-[![Blog](https://img.shields.io/badge/📝%20Mini%20Blog-HuggingFace-blue?style=for-the-badge)](YOUR_BLOG_LINK)
+[![Blog](https://img.shields.io/badge/📝%20Mini%20Blog-HuggingFace-blue?style=for-the-badge)](blog.md)
 
 *"Most coding benchmarks test what the model has memorized. CodeCourt tests what happens when another LLM is actively trying to break it."*
 
@@ -32,7 +32,7 @@ license: mit
 | 🖥️ Live Arena Dashboard | [Launch Arena →](https://huggingface.co/spaces/ayussssssiiii/codecourt) |
 | 🧠 Trained Model (GRPO v1) | [View Model](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1) |
 | 📓 Training Notebook (Colab) | [Open in Colab →](https://colab.research.google.com/github/ayushoncode/CodeCourt/blob/main/notebooks/train_codecourt.ipynb) |
-| 📝 Write-up / Blog | [Read Blog](Blog.md) |
+| 📝 Write-up / Blog | [Read Blog](blog.md) |
 | 🎬 Demo Video (YouTube) | [Watch Demo →](YOUR_YOUTUBE_LINK) |
 | 💻 GitHub Source | [View Repo](https://github.com/ayushoncode/CodeCourt) |
 
