@@ -28,13 +28,13 @@ license: mit
 
 | Material | Link |
 |---------|------|
-| 🤗 HF Space (Live Environment) | [ayussssssiiii/codecourt](https://huggingface.co/spaces/ayussssssiiii/codecourt) |
-| 🖥️ Live Arena Dashboard | [ayussssssiiii/codecourt](https://huggingface.co/spaces/ayussssssiiii/codecourt) |
-| 🧠 Trained Model (GRPO v1) | [your-username/codecourt-model]((https://img.shields.io/badge/🧠%20Trained%20Model-GRPO%20v1-green?style=for-the-badge)](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1)) |
-| 📓 Training Notebook (Colab) | [Open in Google Colab](https://img.shields.io/badge/📓%20Training-Colab%20Notebook-yellow?style=for-the-badge)](https://colab.research.google.com/github/ayushoncode/CodeCourt/blob/main/notebooks/train_codecourt.ipynb) |
+| 🤗 HF Space (Live Environment) | [Open CodeCourt](https://huggingface.co/spaces/ayussssssiiii/codecourt) |
+| 🖥️ Live Arena Dashboard | [Launch Arena →](https://huggingface.co/spaces/ayussssssiiii/codecourt) |
+| 🧠 Trained Model (GRPO v1) | [View Model](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1) |
+| 📓 Training Notebook (Colab) | [Open in Colab →](https://colab.research.google.com/github/ayushoncode/CodeCourt/blob/main/notebooks/train_codecourt.ipynb) |
 | 📝 Write-up / Blog | [Read Blog](Blog.md) |
-| 🎬 Demo Video (YouTube) | [Watch on YouTube →](YOUR_YOUTUBE_LINK) |
-| 💻 GitHub Source | [your-username/CodeCourt](https://github.com/ayushoncode/CodeCourt/) |
+| 🎬 Demo Video (YouTube) | [Watch Demo →](YOUR_YOUTUBE_LINK) |
+| 💻 GitHub Source | [View Repo](https://github.com/ayushoncode/CodeCourt) |
 
 ## 🎯 The Problem Nobody Is Solving
 
