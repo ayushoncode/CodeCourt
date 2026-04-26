@@ -1,5 +1,5 @@
 {
-  "artifacts_version": 1,
+  "artifacts_version": 2,
   "project": "CodeCourt",
   "generated_for": "OpenEnv Docker Space proof package",
   "baseline": {
@@ -14,28 +14,33 @@
       "avg_solver_reward": 24.778333333333332
     }
   },
-  "trained_reference": {
+  "training_run": {
     "path": "./outputs/training_history.json",
-    "run_type": "smoke_run_reference",
-    "description": "Committed smoke-run reference used as the trained-side comparison in the demo dashboard.",
+    "run_type": "real_grpo_trace",
+    "description": "Committed GRPO training trace logged from the real solver training run.",
     "summary": {
-      "episodes": 30,
-      "avg_solver_pass_rate": 1.0,
-      "avg_solver_reward": 73.22125,
-      "setter_win_rate": 0.0
+      "total_logged_steps": 101,
+      "reward_points_logged": 100,
+      "final_step": 100,
+      "final_reward": -13.125,
+      "best_reward": 34.310001373291016,
+      "final_pass_rate": null,
+      "best_pass_rate": null,
+      "final_robustness": null,
+      "best_robustness": null
     }
   },
   "evaluation_summary": {
     "path": "./outputs/plots/evaluation_summary.json",
     "summary": {
       "baseline_pass_rate": 0.5472222222222223,
-      "trained_pass_rate": 1.0,
-      "pass_rate_delta": 0.4527777777777777,
+      "trained_pass_rate": null,
+      "pass_rate_delta": null,
       "baseline_reward": 24.762,
-      "trained_reward": 73.22125,
-      "reward_delta": 48.45925,
+      "trained_reward": null,
+      "reward_delta": null,
       "trained_robustness": null,
-      "trained_setter_win_rate": 0.0
+      "trained_setter_win_rate": null
     }
   },
   "capability_probe": {
@@ -50,11 +55,12 @@
   },
   "plots": [
     "./outputs/plots/training_curves.png",
+    "./outputs/plots/training_curves1.png",
     "./outputs/plots/before_after.png"
   ],
   "notes": [
-    "The trained-side comparison currently uses the committed training_history.json smoke run, not a full GRPO checkpoint log.",
-    "Run scripts/train.py with --publish-root-artifacts to replace the smoke-run proof package with a real GRPO run.",
-    "Dashboard artifact status and README links are intended to match these committed files exactly."
+    "Training cards should be derived from the committed GRPO trace in training_history.json.",
+    "No trained aggregate evaluation artifact is currently committed beyond the capability probe and the raw GRPO trace.",
+    "Dashboard should avoid presenting trained pass-rate rollups unless a real trained evaluation file is available."
   ]
 }

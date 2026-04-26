@@ -1,10 +1,14 @@
 {
-  "run_type": "smoke_run_reference",
-  "episodes": 30,
-  "latest_reward": 71.74,
-  "latest_pass_rate": 1.0,
-  "tail_avg_reward": 73.22125,
-  "tail_avg_pass_rate": 1.0,
-  "setter_win_rate": 0.0,
-  "note": "This committed summary is derived from training_history.json. Run scripts/train.py --publish-root-artifacts to replace it with a real GRPO summary."
+  "run_type": "real_grpo_trace",
+  "source": "./outputs/training_history.json",
+  "total_logged_steps": 101,
+  "reward_points_logged": 100,
+  "final_step": 100,
+  "final_reward": -13.125,
+  "best_reward": 34.310001373291016,
+  "final_pass_rate": null,
+  "best_pass_rate": null,
+  "final_robustness": null,
+  "best_robustness": null,
+  "note": "Derived directly from the committed GRPO trace in training_history.json. No trained evaluation rollup is committed yet."
 }

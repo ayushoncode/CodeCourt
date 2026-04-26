@@ -333,6 +333,38 @@ def _read_json_if_exists(path: Path):
         return None
 
 
+def _summarize_training_log(training_log: Any) -> dict[str, Any] | None:
+    if not isinstance(training_log, list) or not training_log:
+        return None
+
+    metric_rows = [row for row in training_log if isinstance(row, dict) and row.get("step") is not None]
+    reward_rows = [row for row in metric_rows if row.get("reward") is not None]
+    if not metric_rows:
+        return None
+
+    final_metric = metric_rows[-1]
+    final_reward_row = reward_rows[-1] if reward_rows else None
+    reward_values = [row["reward"] for row in reward_rows if isinstance(row.get("reward"), (int, float))]
+
+    inferred_kind = "generic_trace"
+    if reward_rows and any("loss" in row for row in metric_rows):
+        inferred_kind = "grpo_trace"
+
+    return {
+        "kind": inferred_kind,
+        "logged_steps": len(metric_rows),
+        "reward_points": len(reward_rows),
+        "final_step": final_metric.get("step"),
+        "final_reward": final_reward_row.get("reward") if final_reward_row else None,
+        "best_reward": max(reward_values) if reward_values else None,
+        "worst_reward": min(reward_values) if reward_values else None,
+        "final_runtime_sec": final_metric.get("train_runtime"),
+        "has_loss": any("loss" in row for row in metric_rows),
+        "has_completion_stats": any("completions/mean_length" in row for row in metric_rows),
+        "final_clipped_ratio": final_reward_row.get("completions/clipped_ratio") if final_reward_row else None,
+    }
+
+
 def _build_artifacts() -> dict:
     baseline_path = OUTPUTS_DIR / "baseline_results.json"
     training_log_path = OUTPUTS_DIR / "training_history.json"
@@ -350,6 +382,7 @@ def _build_artifacts() -> dict:
     if training_summary is None and isinstance(evaluation_summary, dict):
         training_summary = evaluation_summary
     capability_eval = _read_json_if_exists(capability_eval_path)
+    inferred_training_summary = _summarize_training_log(training_log)
 
     latest_reward = None
     latest_pass_rate = None
@@ -359,6 +392,21 @@ def _build_artifacts() -> dict:
             latest = reward_rows[-1]
             latest_reward = latest.get("solver_reward", latest.get("reward"))
             latest_pass_rate = latest.get("solver_pass_rate", latest.get("reward_pass_rate"))
+
+    training_summary_run_type = training_summary.get("run_type") if isinstance(training_summary, dict) else None
+    manifest_run_type = None
+    if isinstance(manifest, dict):
+        manifest_run_type = (
+            manifest.get("training_run", {}) or {}
+        ).get("run_type") or (
+            manifest.get("trained_reference", {}) or {}
+        ).get("run_type")
+
+    smoke_detected = (
+        training_summary_run_type == "smoke_run_reference"
+        or manifest_run_type == "smoke_run_reference"
+    )
+    real_grpo_detected = bool(inferred_training_summary and inferred_training_summary.get("kind") == "grpo_trace")
 
     return {
         "baseline_available": baseline is not None,
@@ -371,6 +419,13 @@ def _build_artifacts() -> dict:
         "training_summary": training_summary,
         "evaluation_summary": evaluation_summary,
         "capability_eval": capability_eval,
+        "inferred_training_summary": inferred_training_summary,
+        "artifact_truth": {
+            "smoke_detected": smoke_detected,
+            "real_grpo_detected": real_grpo_detected,
+            "training_summary_run_type": training_summary_run_type,
+            "manifest_run_type": manifest_run_type,
+        },
         "latest_training_metrics": {
             "reward": latest_reward,
             "reward_pass_rate": latest_pass_rate,
