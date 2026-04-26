@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from agents import SetterAgent, SolverAgent
 from env import CodeCourtEnv
+from env.dynamic_curriculum import build_dynamic_problem
 from env.problem_types import ARCHETYPES, build_problem
 from env.state import EpisodeState
 
@@ -137,7 +138,10 @@ def _force_problem(
     )
     env._episode_count += 1
     variant_seed = env.rng.randint(0, 10**9)
-    problem = build_problem(archetype, chosen_task_id, difficulty, seed=variant_seed)
+    if env.dynamic_problems:
+        problem = build_dynamic_problem(archetype, chosen_task_id, difficulty, seed=variant_seed)
+    else:
+        problem = build_problem(archetype, chosen_task_id, difficulty, seed=variant_seed)
     env._current_state.problem = problem
     return {
         "episode_id": env._current_state.episode_id,
@@ -147,6 +151,7 @@ def _force_problem(
         "problem_template": problem["description"],
         "test_cases": problem["test_cases"],
         "variant_seed": variant_seed,
+        "generation_mode": problem.get("generation_mode", "static"),
         "elo": env.elo.get_stats(),
     }
 
@@ -160,9 +165,12 @@ def _truncate_problem(problem: dict) -> dict:
         "output_format": problem.get("output_format"),
         "optimal_complexity": problem.get("optimal_complexity"),
         "variant_seed": problem.get("variant_seed"),
+        "generation_mode": problem.get("generation_mode", "static"),
+        "trap_explanation": problem.get("trap_explanation"),
         "public_test_cases": problem.get("public_test_cases", problem.get("test_cases", []))[:3],
         "public_test_count": len(problem.get("public_test_cases", problem.get("test_cases", []))),
         "hidden_test_count": len(problem.get("hidden_test_cases", [])),
+        "dynamic_trap_count": len(problem.get("trap_test_cases", [])),
     }
 
 

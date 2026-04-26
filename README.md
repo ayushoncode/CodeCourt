@@ -58,9 +58,9 @@ Real software doesn't fail on known problems. It fails on:
 │   │ GRPO-trained│◀──solver_reward──│  Executor   │             │
 │   └─────────────┘                  └─────────────┘             │
 │                                                                  │
-│   Setter rewarded when Solver FAILS hidden tests                │
-│   Solver rewarded when it PASSES hidden tests                   │
-│   → A real arms race. Both agents co-evolve.                    │
+│   Every reset builds a fresh seeded problem variant             │
+│   Every step can inject new hidden trap tests from solver code  │
+│   → A real arms race with dynamic tasks and dynamic failures    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -69,6 +69,20 @@ Real software doesn't fail on known problems. It fails on:
 | **Setter** | Red Team — Vulnerability Generator | Plant hidden edge cases, complexity traps, zero-day bugs |
 | **Solver** | Blue Team — Patcher | Pass ALL tests including adversarial hidden ones |
 | **Oracle** | Sandboxed Judge | Execute real code, measure pass/fail, issue shaped rewards |
+
+---
+
+## ⚡ What’s New — Full Dynamic Curriculum
+
+CodeCourt now runs with a **fully dynamic curriculum path** inside the environment:
+
+- **Dynamic problems on reset** — every episode starts from a seeded problem variant, not just a fixed canonical prompt
+- **Dynamic hidden tests** — each problem includes fresh hidden cases in addition to the public examples
+- **Dynamic trap injection on step** — after the Solver submits code, CodeCourt can generate new hidden tests aimed at the exact failure mode of that submission
+- **Seeded uniqueness** — every round carries a `variant_seed`, so even the same archetype/task pair produces new test surfaces
+- **Safe fallback behavior** — the system still preserves oracle-checkable task families and reference solutions, so the environment stays trainable and testable
+
+This means the Solver is not only training against hidden tests. It is training against **new hidden tests and new post-submission trap tests** that are created per episode.
 
 ---
 
@@ -96,7 +110,7 @@ These are not cherry-picked outputs. The model passed cases it had **never seen*
 | Metric | Baseline | After Training |
 |---|---|---|
 | Hidden-test pass rate | 54.7% | — |
-| Best solver reward | — | **+34.31** (step 34) ⬆️ |
+| Best solver reward | — | **+34.31** (step 26) ⬆️ |
 | Boundary-condition probe | 16.7% (1/6) | **100.0% (6/6) ✅** |
 | Brute-force penalty triggers | 46.7% of episodes | **0.0%** |
 | Setter win rate | 56.7% | **0.0%** |
@@ -107,7 +121,7 @@ These are not cherry-picked outputs. The model passed cases it had **never seen*
 
 ![Training Curves](outputs/plots/training_curves1.png)
 
-*Step 1: −9.25 → Peak: +34.31 (step 34). The spike is the signal — when the model generates a complete solution, it passes adversarial hidden tests. The reward design is correct; the bottleneck was generation length.*
+*Step 1: −9.25 → Peak: +34.31 (step 26). The spike is the signal — when the model generates a complete solution, it passes adversarial hidden tests. The reward design is correct; generation length appeared to be a key bottleneck in this run.*
 
 ### Before vs After
 
@@ -125,6 +139,8 @@ These are not cherry-picked outputs. The model passed cases it had **never seen*
 
 **🔧 What We Built**
 - Seeded adversarial task generation — hidden tests never seen during training
+- Fully dynamic problem construction at `reset()`
+- Solver-targeted trap generation at `step()`
 - 5-signal shaped GRPO reward — correctness, complexity, regression, format, robustness
 - Anti-gaming penalties that catch shortcuts automatically
 - Real Oracle sandbox — actual Python execution, real pass/fail
@@ -144,7 +160,9 @@ These are not cherry-picked outputs. The model passed cases it had **never seen*
 
 **2. Dynamic seeding** — every episode is unique. Memorization is structurally impossible.
 
-**3. Multi-signal shaped reward** — 5 independent checks:
+**3. Dynamic trap injection** — after the Solver submits code, the environment can append fresh hidden tests aimed at the exact shortcut it appears to be using.
+
+**4. Multi-signal shaped reward** — 5 independent checks:
 
 ```python
 solver_reward = (
@@ -156,9 +174,9 @@ solver_reward = (
 )
 ```
 
-**4. Setter actively adapts** — rewarded when it finds weaknesses. It doesn't stand still.
+**5. Setter and curriculum stay adversarial** — problems and hidden tests are regenerated with a new seed every round.
 
-**5. Elo tracking** — both agents have live Elo ratings updated every episode.
+**6. Elo tracking** — both agents have live Elo ratings updated every episode.
 
 ---
 
@@ -211,6 +229,26 @@ solver_reward = (
 
 ---
 
+## 🧪 Dynamic Generation Flow
+
+The live environment now follows this loop:
+
+1. Pick an archetype, task, difficulty, and fresh `variant_seed`
+2. Build a canonical oracle-safe problem family
+3. Add seeded dynamic cases to make the episode unique
+4. Expose only a small public slice to the Solver
+5. Keep the rest hidden for evaluation
+6. After Solver submission, generate new trap tests targeted at the submitted code
+7. Re-score the solver on the expanded hidden suite
+
+In code, the new path lives in:
+
+- `env/dynamic_curriculum.py` — dynamic problem and trap generation
+- `env/codecourt_env.py` — dynamic reset/step integration
+- `training/solver_grpo.py` — dynamic training dataset construction
+
+---
+
 ## 🔗 OpenEnv Integration
 
 ```python
@@ -231,29 +269,32 @@ print(env.render())
 ```bash
 git clone https://github.com/ayushoncode/CodeCourt.git
 cd CodeCourt
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 
 # Run baseline (untrained)
-python scripts/baseline.py --episodes 30
+python3 scripts/baseline.py --episodes 30
 
 # Train via GRPO
-python scripts/train.py \
+python3 scripts/train.py \
     --model Qwen/Qwen2.5-0.5B-Instruct \
     --train-samples 54 \
     --max-steps 100 \
     --max-completion-length 768
 
 # Generate proof plots
-python scripts/evaluate.py \
+python3 scripts/evaluate.py \
     --baseline ./outputs/baseline_results.json \
     --trained  ./outputs/training_history.json \
     --output   ./outputs/plots/
 
 # Run boundary probe
-python scripts/boundary_eval.py
+python3 scripts/boundary_eval.py
+
+# Run dynamic environment tests
+python3 tests/test_env.py
 
 # Launch live dashboard
-uvicorn app:app --host 0.0.0.0 --port 7860
+python3 -m uvicorn app:app --host 0.0.0.0 --port 7860 --reload
 ```
 
 ---
@@ -263,7 +304,7 @@ uvicorn app:app --host 0.0.0.0 --port 7860
 ```
 codecourt/
 ├── oracle/          # Sandboxed execution + validation
-├── env/             # OpenEnv environment + task generation
+├── env/             # OpenEnv environment + static/dynamic task generation
 ├── rewards/         # Shaped reward rubrics + Elo tracking
 ├── agents/          # Setter and Solver agents
 ├── training/        # GRPO dataset + reward helpers
@@ -277,6 +318,13 @@ codecourt/
         ├── training_curves1.png
         └── before_after.png
 ```
+
+### New Dynamic Files / Paths
+
+- `env/dynamic_curriculum.py` — seeded dynamic problem variants plus post-submission trap generation
+- `env/codecourt_env.py` — `dynamic_problems=True` and `dynamic_traps=True` by default
+- `training/solver_grpo.py` — dataset rows now come from the dynamic builder
+- `tests/test_env.py` — coverage for dynamic metadata and trap injection
 
 ---
 

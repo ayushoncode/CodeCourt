@@ -17,6 +17,7 @@ def test_env_reset():
     assert "difficulty" in obs
     assert "public_test_cases" in obs
     assert "hidden_test_count" in obs
+    assert obs["generation_mode"] == "dynamic"
     print("✓ test_env_reset")
 
 
@@ -37,7 +38,36 @@ def test_env_step():
     assert "setter_valid" in info
     assert "solver_public_pass_rate" in info
     assert "solver_hidden_pass_rate" in info
+    assert "dynamic_trap_count" in info
     print("✓ test_env_step")
+
+
+def test_dynamic_problem_metadata():
+    env = CodeCourtEnv()
+    env.reset()
+    problem = env._current_state.problem
+    assert problem["generation_mode"] == "dynamic"
+    assert "trap_explanation" in problem
+    assert problem["reference_solution"]
+    print("✓ test_dynamic_problem_metadata")
+
+
+def test_dynamic_traps_added_for_bruteforce_solver():
+    env = CodeCourtEnv()
+    env.reset()
+
+    setter = SetterAgent(use_reference=True)
+    solver = SolverAgent(use_brute_force=True)
+
+    setter_code = setter.generate_solution(env._current_state.problem)
+    solver_code = solver.solve(env._current_state.problem)
+
+    _, _, done, info = env.step(setter_code, solver_code)
+
+    assert done is True
+    assert info["dynamic_trap_count"] >= 1
+    assert len(env._current_state.problem.get("trap_test_cases", [])) == info["dynamic_trap_count"]
+    print("✓ test_dynamic_traps_added_for_bruteforce_solver")
 
 
 def test_difficulty_progression():
@@ -80,6 +110,8 @@ if __name__ == "__main__":
     print("Running Environment tests...")
     test_env_reset()
     test_env_step()
+    test_dynamic_problem_metadata()
+    test_dynamic_traps_added_for_bruteforce_solver()
     test_difficulty_progression()
     test_elo_tracker()
     print("\n✅ All environment tests passed!")

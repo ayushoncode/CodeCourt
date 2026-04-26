@@ -6,6 +6,7 @@ Implements reset / step / render following the OpenEnv spec.
 import random
 from typing import Dict, Any, Optional, Tuple
 
+from env.dynamic_curriculum import build_dynamic_problem, generate_dynamic_trap_tests
 from env.problem_types import ARCHETYPES, build_problem
 from env.state import EpisodeState
 from oracle.executor import OracleExecutor
@@ -37,6 +38,8 @@ class CodeCourtEnv:
         memory_limit_mb: int = 256,
         difficulty_progression: bool = True,
         seed: int = 42,
+        dynamic_problems: bool = True,
+        dynamic_traps: bool = True,
     ):
         self.archetypes = archetypes or list(ARCHETYPES.keys())
         self.oracle = OracleExecutor(time_limit, memory_limit_mb)
@@ -45,6 +48,8 @@ class CodeCourtEnv:
         self.solver_rubric = SolverRubric()
         self.elo = EloTracker()
         self.difficulty_progression = difficulty_progression
+        self.dynamic_problems = dynamic_problems
+        self.dynamic_traps = dynamic_traps
         self.rng = random.Random(seed)
 
         self._episode_count = 0
@@ -71,7 +76,10 @@ class CodeCourtEnv:
         self._episode_count += 1
 
         # Build the ground-truth problem (Setter starts from this template)
-        problem = build_problem(archetype, task_id, self._current_difficulty, seed=variant_seed)
+        if self.dynamic_problems:
+            problem = build_dynamic_problem(archetype, task_id, self._current_difficulty, seed=variant_seed)
+        else:
+            problem = build_problem(archetype, task_id, self._current_difficulty, seed=variant_seed)
         self._current_state.problem = problem
 
         obs = {
@@ -83,6 +91,7 @@ class CodeCourtEnv:
             "public_test_cases": problem["public_test_cases"],
             "hidden_test_count": len(problem["hidden_test_cases"]),
             "variant_seed": variant_seed,
+            "generation_mode": problem.get("generation_mode", "static"),
             "elo": self.elo.get_stats(),
         }
         return obs
@@ -108,6 +117,16 @@ class CodeCourtEnv:
         problem = state.problem
         public_test_cases = problem.get("public_test_cases", problem["test_cases"])
         hidden_test_cases = problem.get("hidden_test_cases", problem["test_cases"])
+
+        trap_test_cases = []
+        if self.dynamic_traps:
+            trap_test_cases = generate_dynamic_trap_tests(problem, solver_code)
+            if trap_test_cases:
+                problem["trap_test_cases"] = trap_test_cases
+                hidden_test_cases = hidden_test_cases + [
+                    {"input": tc["input"], "expected": tc["expected"]} for tc in trap_test_cases
+                ]
+
         all_test_cases = public_test_cases + hidden_test_cases
 
         # ── 1. Validate problem structure ──
@@ -185,6 +204,10 @@ class CodeCourtEnv:
             "elo": self.elo.get_stats(),
             "validation_errors": validation.errors,
             "validation_warnings": validation.warnings,
+            "generation_mode": problem.get("generation_mode", "static"),
+            "dynamic_trap_count": len(trap_test_cases),
+            "dynamic_traps": trap_test_cases,
+            "effective_hidden_test_count": len(hidden_test_cases),
         }
 
         return (

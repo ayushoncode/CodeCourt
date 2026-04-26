@@ -34,22 +34,27 @@ class SolverAgent:
         """
         Given a problem dict, return Python code that attempts to solve it.
         """
-        archetype = problem.get("archetype", "array")
-        task_id = problem.get("task_id", 0)
-
         if self.use_brute_force:
-            return self._brute_force(archetype, task_id)
+            return self._brute_force(problem)
 
         if self.use_reference:
-            return self._reference_solution(archetype, task_id)
+            return self._reference_solution(problem)
 
         return self._llm_solve(problem)
 
-    def _reference_solution(self, archetype: str, task_id: int) -> str:
+    def _reference_solution(self, problem: Dict[str, Any]) -> str:
+        if problem.get("reference_solution"):
+            return problem["reference_solution"]
+        archetype = problem.get("archetype", "array")
+        task_id = problem.get("task_id", 0)
         key = (archetype, task_id)
         return REFERENCE_SOLUTIONS.get(key, 'print(0)')
 
-    def _brute_force(self, archetype: str, task_id: int) -> str:
+    def _brute_force(self, problem: Dict[str, Any]) -> str:
+        if problem.get("brute_force_solution"):
+            return problem["brute_force_solution"]
+        archetype = problem.get("archetype", "array")
+        task_id = problem.get("task_id", 0)
         key = (archetype, task_id)
         if key in BRUTE_FORCE_SOLUTIONS:
             return BRUTE_FORCE_SOLUTIONS[key]

@@ -10,7 +10,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from agents.prompts import SOLVER_SYSTEM, SOLVER_USER_TEMPLATE
-from env.problem_types import ARCHETYPES, build_problem
+from env.dynamic_curriculum import build_dynamic_problem
+from env.problem_types import ARCHETYPES
 from oracle.executor import OracleExecutor
 
 
@@ -44,7 +45,7 @@ def make_solver_dataset(num_samples: int, max_difficulty: int = 3) -> list[dict[
                 tasks = ARCHETYPES[archetype]["tasks"]
                 for task_id in range(len(tasks)):
                     seed = 1000 + sample_id * 17 + difficulty * 101 + task_id * 13
-                    problem = build_problem(archetype, task_id, difficulty, seed=seed)
+                    problem = build_dynamic_problem(archetype, task_id, difficulty, seed=seed)
                     sample = SolverTrainingSample(
                         prompt=build_solver_prompt(problem),
                         test_cases_json=json.dumps(problem["test_cases"]),
