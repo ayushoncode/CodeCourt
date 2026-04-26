@@ -167,6 +167,10 @@ Setter win rate:       56.7% → 0.0%
 Boundary probe:        16.7% → 100.0%
 ```
 
+### Training Curve
+
+![Training Curve](outputs/plots/training_curves1.png)
+
 The reward curve tells the story. Step 1 starts at −9.25. The spike at step 26 to +34.31 is the moment the model generates a complete, correct solution that passes adversarial hidden tests. That spike isn't noise — it's the policy finding the regime where real correctness lives.
 
 ---
@@ -183,6 +187,10 @@ We locked in 6 adversarial edge cases *before training began*. They were never s
 | `array_lis_hidden_valley` | Valley pattern breaks greedy LIS | ❌ | ✅ |
 | `dp_lcs_order_sensitive` | Reversed string pair | ❌ | ✅ |
 | Overall | — | **16.7%** | **100.0% ✅** |
+
+### Before vs After Behavior
+
+![Before vs After](outputs/plots/before_after.png)
 
 **5 cases the model had never seen. All 5 solved.**
 
