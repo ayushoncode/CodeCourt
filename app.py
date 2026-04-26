@@ -4,6 +4,7 @@ FastAPI app for the CodeCourt Hugging Face Docker Space.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import threading
 import uuid
@@ -76,6 +77,32 @@ SESSIONS = SessionStore()
 
 active_connections: list[WebSocket] = []
 
+
+async def _broadcast_payload(payload: dict[str, Any]) -> None:
+    stale_connections: list[WebSocket] = []
+    for conn in active_connections.copy():
+        try:
+            await conn.send_json(payload)
+        except Exception:
+            stale_connections.append(conn)
+    for conn in stale_connections:
+        if conn in active_connections:
+            active_connections.remove(conn)
+
+
+def broadcast_payload(payload: dict[str, Any]) -> None:
+    if not active_connections:
+        return
+    try:
+        asyncio.run(_broadcast_payload(payload))
+    except RuntimeError:
+        # Fallback for environments that already have an active loop.
+        loop = asyncio.new_event_loop()
+        try:
+            loop.run_until_complete(_broadcast_payload(payload))
+        finally:
+            loop.close()
+
 @app.websocket("/ws/arena")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -89,12 +116,7 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.post("/api/internal/broadcast")
 async def internal_broadcast(request: Request):
     data = await request.json()
-    for conn in active_connections.copy():
-        try:
-            await conn.send_json(data)
-        except Exception:
-            if conn in active_connections:
-                active_connections.remove(conn)
+    await _broadcast_payload(data)
     return JSONResponse(content={"status": "broadcasted"})
 
 
@@ -385,12 +407,29 @@ def _run_episode(env: CodeCourtEnv, request: SolverRunRequest) -> dict:
     solver_code = _select_solver(state.problem, request)
     setter_info, solver_info, _, info = env.step(setter_code, solver_code)
 
-    return {
+    payload = {
         "session_state": _serialize_state(env),
         "info": info,
         "setter_reward_info": setter_info,
         "solver_reward_info": solver_info,
     }
+    broadcast_payload({
+        "event": "session_run",
+        "session_id": getattr(env._current_state, "episode_id", None),
+        "archetype": state.archetype,
+        "task_id": state.task_id,
+        "difficulty": state.difficulty,
+        "outcome": info["outcome"],
+        "reward": solver_info["reward"],
+        "pass_rate": info["solver_pass_rate"],
+        "public_pass_rate": info.get("solver_public_pass_rate"),
+        "hidden_pass_rate": info.get("solver_hidden_pass_rate"),
+        "setter_reward": setter_info["reward"],
+        "setter_elo": info.get("elo", {}).get("setter_elo"),
+        "solver_elo": info.get("elo", {}).get("solver_elo"),
+        "timestamp": uuid.uuid4().hex[:8],
+    })
+    return payload
 
 
 def _benchmark(request: BenchmarkRequest) -> dict:
@@ -415,6 +454,21 @@ def _benchmark(request: BenchmarkRequest) -> dict:
             "solver_reward": solver_info["reward"],
             "solver_pass_rate": effective_pass_rate,
             "raw_solver_pass_rate": info["solver_pass_rate"],
+        })
+        broadcast_payload({
+            "event": "benchmark_episode",
+            "episode": episode_idx,
+            "archetype": obs["archetype"],
+            "task_id": obs["task_id"],
+            "difficulty": obs["difficulty"],
+            "outcome": info["outcome"],
+            "reward": solver_info["reward"],
+            "pass_rate": effective_pass_rate,
+            "public_pass_rate": info.get("solver_public_pass_rate"),
+            "hidden_pass_rate": info.get("solver_hidden_pass_rate"),
+            "setter_elo": info.get("elo", {}).get("setter_elo"),
+            "solver_elo": info.get("elo", {}).get("solver_elo"),
+            "stream": "benchmark",
         })
 
     avg_pass_rate = sum(ep["solver_pass_rate"] for ep in episodes) / len(episodes)
