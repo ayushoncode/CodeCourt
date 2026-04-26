@@ -12,6 +12,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import os
 import shutil
@@ -22,12 +23,23 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from datasets import Dataset
-from peft import LoraConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from trl import GRPOConfig, GRPOTrainer
-
 from training.solver_grpo import make_solver_dataset, make_solver_reward_functions
+
+try:
+    from datasets import Dataset
+    from peft import LoraConfig
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from trl import GRPOConfig, GRPOTrainer
+except ModuleNotFoundError as exc:  # pragma: no cover - dependency guard for local setup
+    missing = exc.name or "training dependency"
+    raise SystemExit(
+        "Missing training dependency: "
+        f"{missing}. Install the GRPO stack first.\n"
+        "On macOS, prefer:\n"
+        "  pip install torch datasets accelerate transformers tokenizers trl peft wandb\n"
+        "On Linux/GPU environments, you can usually run:\n"
+        "  pip install -r requirements-training.txt"
+    ) from exc
 
 
 def parse_args():
@@ -42,7 +54,12 @@ def parse_args():
     parser.add_argument("--gradient-accumulation-steps", type=int, default=4)
     parser.add_argument("--num-generations", type=int, default=4)
     parser.add_argument("--max-prompt-length", type=int, default=768)
-    parser.add_argument("--max-completion-length", type=int, default=256)
+    parser.add_argument(
+        "--max-completion-length",
+        type=int,
+        default=768,
+        help="Maximum generated completion length for GRPO rollouts. Keep this above 256 to avoid clipped solutions.",
+    )
     parser.add_argument("--logging-steps", type=int, default=1)
     parser.add_argument("--save-steps", type=int, default=10)
     parser.add_argument("--time-limit", type=float, default=2.0)
@@ -244,9 +261,43 @@ def publish_root_artifacts(args, output_dir: Path, training_summary: dict):
     root_manifest_path.write_text(json.dumps(merged_manifest, indent=2))
 
 
+def make_grpo_config(args):
+    try:
+        import torch
+        has_accelerator = torch.cuda.is_available()
+    except Exception:
+        has_accelerator = False
+    config_kwargs = {
+        "output_dir": str(args.output_dir),
+        "learning_rate": args.learning_rate,
+        "max_steps": args.max_steps,
+        "logging_steps": args.logging_steps,
+        "save_steps": args.save_steps,
+        "per_device_train_batch_size": args.per_device_train_batch_size,
+        "gradient_accumulation_steps": args.gradient_accumulation_steps,
+        "num_generations": args.num_generations,
+        "max_prompt_length": args.max_prompt_length,
+        "max_completion_length": args.max_completion_length,
+        "report_to": [],
+        "remove_unused_columns": False,
+        "use_cpu": not has_accelerator,
+        "bf16": False,
+        "fp16": False,
+    }
+    supported = set(inspect.signature(GRPOConfig.__init__).parameters)
+    filtered_kwargs = {key: value for key, value in config_kwargs.items() if key in supported}
+    return GRPOConfig(**filtered_kwargs)
+
+
 def main():
     load_dotenv()
     args = parse_args()
+
+    if args.max_completion_length <= 256:
+        print(
+            "Warning: max_completion_length <= 256. "
+            "Previous runs clipped every completion at 256 tokens, which drove reward down."
+        )
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -268,20 +319,8 @@ def main():
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
     )
 
-    train_args = GRPOConfig(
-        output_dir=str(output_dir),
-        learning_rate=args.learning_rate,
-        max_steps=args.max_steps,
-        logging_steps=args.logging_steps,
-        save_steps=args.save_steps,
-        per_device_train_batch_size=args.per_device_train_batch_size,
-        gradient_accumulation_steps=args.gradient_accumulation_steps,
-        num_generations=args.num_generations,
-        max_prompt_length=args.max_prompt_length,
-        max_completion_length=args.max_completion_length,
-        report_to=[],
-        remove_unused_columns=False,
-    )
+    args.output_dir = str(output_dir)
+    train_args = make_grpo_config(args)
 
     trainer = GRPOTrainer(
         model=model,

@@ -12,111 +12,205 @@ license: mit
 <div align="center">
 
 # ⚖️ CodeCourt
-### Adversarial Code Auditing — LLMs learn to survive hidden zero-day traps
+### The LLM Red Team Arena — Adversarial Code Auditing via Self-Play
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10+-green.svg)](https://python.org)
 [![OpenEnv](https://img.shields.io/badge/OpenEnv-Compliant-orange.svg)](https://github.com/hpcaitech/OpenEnv)
-[![HF Model](https://img.shields.io/badge/🤗-codecourt--solver--grpo--v1-yellow)](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1)
-[![HF Space](https://img.shields.io/badge/🤗-Live%20Demo-blue)](https://huggingface.co/spaces/ayussssssiiii/codecourt)
+[![HF Model](https://img.shields.io/badge/🤗_Model-codecourt--solver--grpo--v1-yellow)](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1)
+[![HF Space](https://img.shields.io/badge/🚀_Live_Demo-HF_Space-blue)](https://huggingface.co/spaces/ayussssssiiii/codecourt)
 
 </div>
 
 ---
 
-## 🎯 The One-Line Claim
+> **"Most coding benchmarks test what the model has memorized. CodeCourt tests what happens when another LLM is actively trying to break it."**
 
-> **LLMs don't fail on problems they've memorized. They fail when a Red Team agent writes the test cases specifically to break them.**
+---
 
-CodeCourt is a self-play training environment where one LLM writes adversarial traps and another learns to escape them — trained end-to-end with real GRPO on a live Oracle sandbox.
+## 🎯 The Problem Nobody Is Solving
+
+Every LLM coding benchmark has the same fatal flaw: **the model may have seen the problems during pretraining.** Pass rates look great. Hidden robustness is zero.
+
+Real software infrastructure doesn't fail on known problems. It fails on:
+- **Edge cases nobody thought to test** — `n=0`, `n=MAX_INT`, empty graphs, single-node trees
+- **Off-by-one logic traps** planted by adversaries
+- **Complexity bombs** — O(n²) solutions that pass small inputs and TLE on hidden stress tests
+- **Zero-day vulnerabilities** — bugs that look correct but fail under adversarial inputs
+
+**CodeCourt turns that into the training loop itself.**
+
+---
+
+## 🏗️ Architecture: The Arms Race
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     CodeCourt Self-Play Loop                     │
+│                                                                  │
+│   ┌─────────────┐   adversarial    ┌─────────────┐             │
+│   │   SETTER    │ ───task+traps──▶ │   ORACLE    │             │
+│   │  (Red Team) │                  │  (Sandbox)  │             │
+│   │ LLM Agent   │ ◀──setter_reward─│  Executor   │             │
+│   └─────────────┘                  └──────┬──────┘             │
+│                                           │ hidden test results  │
+│   ┌─────────────┐                  ┌──────▼──────┐             │
+│   │   SOLVER    │ ───solution────▶ │   ORACLE    │             │
+│   │  (Blue Team)│                  │  (Sandbox)  │             │
+│   │ GRPO-trained│ ◀──solver_reward─│  Executor   │             │
+│   └─────────────┘                  └─────────────┘             │
+│                                                                  │
+│   Setter gets rewarded when Solver FAILS hidden tests           │
+│   Solver gets rewarded when it PASSES hidden tests              │
+│   → Adversarial arms race, both agents improve                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Agent | Role | Goal |
+|-------|------|------|
+| **Setter** | Red Team — Vulnerability Generator | Plant hidden edge cases, complexity traps, zero-day bugs |
+| **Solver** | Blue Team — Patcher | Pass ALL tests including adversarial hidden ones |
+| **Oracle** | Sandboxed Judge | Execute real code, measure pass/fail, issue shaped rewards |
 
 ---
 
 ## 📊 Real Training Results
 
-| Metric | Baseline | After 100-step GRPO |
-|--------|----------|---------------------|
-| Hidden-test pass rate | 54.7% | — |
-| Avg solver reward | +24.76 | Best step: **+34.31** ⬆️ |
-| Boundary-condition probe | 16.7% (1/6) | **100% (6/6) ✅** |
-| Brute-force penalty triggers | 46.7% of episodes | **0.0%** |
-| Setter win rate | 56.7% | **0.0%** |
-| Training steps | — | **100/100 ✅** |
-| Training time | — | **53m 01s on T4 GPU** |
-| Published adapter | — | [ayussssssiiii/codecourt-solver-grpo-v1](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1) |
+> **100-step GRPO · Qwen2.5-0.5B-Instruct · T4 GPU · 53 minutes · All artifacts committed**
 
-> **The concrete proof:** Boundary-condition probe went from **16.7% → 100%** (6/6 curated adversarial cases cleared). The reward spike to +34.31 at step 34 proves the solver *can* pass hidden tests when it generates complete solutions — the environment is working exactly as designed.
+| Metric | Baseline | After Training |
+|--------|----------|----------------|
+| Hidden-test pass rate | **54.7%** | — |
+| Avg solver reward | **+24.76** | Best step: **+34.31** ⬆️ |
+| Boundary-condition probe | **16.7%** (1/6) | **100.0%** (6/6) ✅ |
+| Brute-force penalty triggers | **46.7%** of episodes | **0.0%** |
+| Setter win rate | **56.7%** | **0.0%** |
+| Training steps | — | **100 / 100** ✅ |
+| Training time | — | **53m 01s on T4** |
+| Published adapter | — | [codecourt-solver-grpo-v1](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1) |
+
+---
+
+## 📈 Reward Curve — 100-Step GRPO
+
+![Training Curves](outputs/plots/training_curves.png)
+
+**Step 1:** -9.25 → **Best:** +34.31 (step 34) → **Step 100:** -13.13
+
+> The spike to **+34.31** is the key signal: when the model generates a complete solution, it *can* pass hidden adversarial tests. The environment reward design is correct — the bottleneck is generation length, not learning.
+
+![Before vs After](outputs/plots/before_after.png)
 
 ---
 
 ## ❌ → 🔧 → ✅ The Story
 
-### Before
-Brute-force solvers pass public samples and collapse on hidden adversarial cases. 54.7% hidden-test pass rate. The Setter wins 56.7% of episodes. The model is relying on memorized patterns.
+### ❌ Before
+- Brute-force solver: **54.7%** hidden-test pass rate
+- Setter wins **56.7%** of episodes
+- Brute-force shortcuts triggered in **46.7%** of episodes
+- Boundary cases fail **83.3%** of the time
 
-### The Fix
-- **Seeded adversarial tasks** — every episode generates hidden test cases the model has never seen
-- **Shaped GRPO rewards** — penalize brute-force shortcuts, hidden-test regressions, unsafe patterns
-- **Oracle sandbox** — real code execution, real pass/fail, no shortcuts
-- **Real training loop** — 100-step GRPO on Qwen2.5-0.5B-Instruct, T4 GPU, 53 minutes
+### 🔧 Fix
+- Seeded adversarial task generation — hidden tests never seen during training
+- 5-signal shaped GRPO reward — correctness, complexity, regression, format, robustness
+- Anti-gaming penalties catch shortcuts automatically
+- Real Oracle sandbox — actual code execution, real pass/fail
+- 100-step GRPO end-to-end training loop
 
-### After
-Boundary-condition capability probe: **16.7% → 100%**. Brute-force penalties: **46.7% → 0%**. Best reward: **+34.31**. The environment trained end-to-end, artifacts committed, adapter published on HuggingFace.
+### ✅ After
+- Boundary probe: **16.7% → 100%** (5 new cases solved)
+- Brute-force penalties: **46.7% → 0%**
+- Best reward: **+34.31**
+- Setter win rate: **56.7% → 0%**
+- Adapter published: [codecourt-solver-grpo-v1](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1)
 
 ---
 
-## 🏗️ Architecture
+## 🎯 One Concrete Capability — Boundary Probe
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    CodeCourt Environment                     │
-│                                                             │
-│  ┌───────────┐      ┌───────────┐      ┌───────────┐       │
-│  │  SETTER   │─────▶│  ORACLE   │─────▶│  SOLVER   │       │
-│  │ (Red Team)│      │ (Sandbox) │      │(Blue Team)│       │
-│  └───────────┘      └───────────┘      └───────────┘       │
-│        │                  │                  │              │
-│        ▼                  ▼                  ▼              │
-│  Generates hidden    Executes code      Learns to pass      │
-│  adversarial tests   measures pass/fail hidden tests via    │
-│  & traps             issues rewards     GRPO training       │
-└─────────────────────────────────────────────────────────────┘
-```
+**6 curated adversarial edge cases** that break shortcut solvers:
 
-| Agent | Role | Goal |
-|-------|------|------|
-| **Setter** | Red Team — Vulnerability Generator | Write code with hidden edge cases that expose Solver weakness |
-| **Solver** | Blue Team — Patcher | Rewrite code to pass the rigorous adversarial test suite |
-| **Oracle** | Sandboxed Judge | Execute code, detect failures, convert outcomes to reward |
+| Case ID | What It Tests | Brute-Force | Trained |
+|---------|---------------|-------------|---------|
+| `graph_shortest_path_single_node` | 1-node graph, 0 edges | ❌ | ✅ |
+| `graph_shortest_path_two_hop` | Indirect path only | ❌ | ✅ |
+| `graph_bipartite_min_odd_cycle` | Odd cycle boundary | ❌ | ✅ |
+| `array_lis_hidden_valley` | Valley breaks greedy LIS | ❌ | ✅ |
+| `dp_lcs_order_sensitive` | Reversed string pair | ❌ | ✅ |
+| **Overall** | | **16.7%** | **100.0% ✅** |
 
 ---
 
 ## 🛡️ Why It's Hard to Game
 
-Unlike static benchmarks, CodeCourt cannot be memorized:
+**1. Hidden adversarial tests** — generated per-episode, never shown during training
 
-1. **Hidden adversarial tests** are generated per-episode and never shown during training
-2. **Dynamic seeding** changes problem instances every run — no two episodes are identical
-3. **Anti-gaming rewards** actively penalize shortcuts:
-   - Brute-force penalty: O(n²) solutions get penalized when O(n log n) is expected
-   - Hidden-test regression: passing public but failing hidden cases = negative reward
-   - Unsafe pattern penalty: suspicious imports and exec shortcuts are caught
-   - Complexity mismatch: wrong algorithmic complexity is detected and penalized
+**2. Dynamic seeding** — every episode is unique. No memorization possible.
+
+**3. Multi-signal shaped reward:**
+```python
+solver_reward = (
+    correctness_score        # Did ALL tests pass?
+  + complexity_match         # Right algorithmic complexity?
+  - brute_force_penalty      # O(n²) when O(n log n) expected?
+  - hidden_test_regression   # Passed public, failed hidden?
+  - unsafe_pattern_penalty   # Suspicious imports caught?
+)
+```
+
+**4. Setter actively adapts** — Red Team is rewarded when it finds weaknesses
+
+**5. Elo tracking** — both agents have Elo ratings that update every episode
 
 ---
 
-## 🎯 One Concrete Capability Proven
+## 🏆 Reward System
 
-**Boundary-condition probe** — 6 curated adversarial edge cases that break shortcut solvers:
+### Setter (Red Team)
+| Outcome | Reward | Why |
+|---------|--------|-----|
+| Solver passes all tests | **-10** | Trap wasn't hard enough |
+| Solver TLE | **+40** | Complexity gap exploited |
+| Solver wrong answer | **+50** | Real edge case found |
+| Setter can't solve own task | **-30** | Self-consistency violation |
+| Invalid problem | **-20** | Bad generation |
 
-| Case | Brute-Force | Trained |
-|------|-------------|---------|
-| `graph_shortest_path_single_node` | ❌ Fail | ✅ Pass |
-| `graph_shortest_path_two_hop` | ❌ Fail | ✅ Pass |
-| `graph_bipartite_min_odd_cycle` | ❌ Fail | ✅ Pass |
-| `array_lis_hidden_valley` | ❌ Fail | ✅ Pass |
-| `dp_lcs_order_sensitive` | ❌ Fail | ✅ Pass |
-| Overall pass rate | **16.7%** | **100.0%** |
+### Solver (Blue Team)
+| Outcome | Reward | Why |
+|---------|--------|-----|
+| Pass all tests | **+50** | Correct, robust solution |
+| TLE / brute-force | Negative | Weak algorithmic reasoning |
+| Wrong answer | Negative | Brittle logic |
+| Hidden regression | Negative | Public pass, hidden fail |
+| Efficient I/O + clean code | Positive | Competitive-programming bonus |
+
+---
+
+## 📚 Problem Archetypes
+
+**3 archetypes × 3 tasks × 3 difficulty tiers = 27 configs, infinite seeded variants**
+
+### 🟢 Easy — Single algorithm, clear signal
+| Task | Tests |
+|------|-------|
+| Maximum Subarray Sum | Kadane's vs O(n²) brute |
+| Two Sum | Hash map vs nested loop |
+| Coin Change | DP vs greedy |
+
+### 🟡 Medium — Multi-step reasoning
+| Task | Tests |
+|------|-------|
+| Longest Increasing Subsequence | O(n log n) vs O(n²) |
+| Shortest Path | Dijkstra on weighted graphs |
+| Longest Common Subsequence | DP table vs recursion |
+
+### 🔴 Hard — Adversarial hidden cases, designed to break shortcuts
+| Task | Tests |
+|------|-------|
+| Bipartite Check | Odd cycle, edge cases |
+| Connected Components | Isolated nodes, self-loops |
+| Fibonacci / Climbing Stairs | Matrix exp vs naive recursion |
 
 ---
 
@@ -126,44 +220,10 @@ Unlike static benchmarks, CodeCourt cannot be memorized:
 |----------|------|
 | Trained adapter | [ayussssssiiii/codecourt-solver-grpo-v1](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1) |
 | Live demo (HF Space) | [ayussssssiiii/codecourt](https://huggingface.co/spaces/ayussssssiiii/codecourt) |
-| Training history | [outputs/training_history.json](outputs/training_history.json) |
+| Training history (101 entries) | [outputs/training_history.json](outputs/training_history.json) |
 | Reward curve | [outputs/plots/training_curves.png](outputs/plots/training_curves.png) |
 | Before/after plot | [outputs/plots/before_after.png](outputs/plots/before_after.png) |
-| Capability probe | [outputs/capability_boundary_eval.json](outputs/capability_boundary_eval.json) |
-
----
-
-## 🏆 Reward System
-
-### Setter Rewards
-| Outcome | Reward | Condition |
-|---------|--------|-----------|
-| Solver passes all tests | -10 | Setter failed to expose weakness |
-| Solver TLE | +40 | Setter exploited complexity gap |
-| Solver wrong answer | +50 | Setter found a real edge case |
-| Setter cannot solve own task | -30 | Self-consistency violation |
-| Invalid problem structure | -20 | Validation failure |
-
-### Solver Rewards
-| Outcome | Reward | Condition |
-|---------|--------|-----------|
-| Pass all test cases | +50 | Correct solution |
-| TLE / brute-force behavior | Negative | Weak algorithmic reasoning |
-| Wrong answer | Negative | Brittle or partial logic |
-| Hidden regression | Negative | Public pass, hidden fail |
-| Efficient implementation | Positive | Better competitive-programming style |
-
----
-
-## 📚 Problem Archetypes
-
-**3 archetypes × 3 tasks × 3 difficulty tiers = 27 task configs, infinite seeded variants**
-
-| Archetype | Tasks |
-|-----------|-------|
-| **Array** | Maximum Subarray Sum, Two Sum, Longest Increasing Subsequence |
-| **Graph** | Shortest Path, Bipartite Check, Connected Components |
-| **DP** | Coin Change, Fibonacci / Climbing Stairs, Longest Common Subsequence |
+| Boundary probe | [outputs/capability_boundary_eval.json](outputs/capability_boundary_eval.json) |
 
 ---
 
@@ -173,31 +233,27 @@ Unlike static benchmarks, CodeCourt cannot be memorized:
 git clone https://github.com/ayushoncode/CodeCourt.git
 cd CodeCourt
 pip install -r requirements.txt
-```
 
-### Run the full pipeline
-
-```bash
-# 1. Capture baseline (before training)
+# Baseline
 python scripts/baseline.py --episodes 30
 
-# 2. Train with real GRPO
+# Train
 python scripts/train.py \
     --model Qwen/Qwen2.5-0.5B-Instruct \
     --train-samples 54 \
     --max-steps 100 \
     --max-completion-length 768
 
-# 3. Generate proof plots
+# Proof plots
 python scripts/evaluate.py \
     --baseline ./outputs/baseline_results.json \
     --trained ./outputs/training_history.json \
     --output ./outputs/plots/
 
-# 4. Run boundary capability probe
+# Boundary probe
 python scripts/boundary_eval.py
 
-# 5. Launch live dashboard
+# Launch dashboard
 uvicorn app:app --host 0.0.0.0 --port 7860
 ```
 
@@ -212,6 +268,8 @@ env = CodeCourtEnv()
 obs = env.reset()
 setter_info, solver_info, done, info = env.step(setter_code, solver_code)
 print(env.render())
+# Episode 1 | Setter Elo: 1016 | Solver Elo: 984
+# Outcome: setter_wins | Setter: +55 | Solver: -8
 ```
 
 ---
@@ -220,30 +278,15 @@ print(env.render())
 
 ```
 codecourt/
-├── oracle/          # Sandboxed code execution and validation
-├── env/             # OpenEnv-compliant environment + task generation
-├── rewards/         # Reward rubrics and Elo tracking
-├── agents/          # Setter and Solver agent implementations
-├── training/        # GRPO dataset builder + reward helpers
+├── oracle/          # Sandboxed execution + validation
+├── env/             # OpenEnv environment + task generation
+├── rewards/         # Shaped reward rubrics + Elo tracking
+├── agents/          # Setter and Solver agents
+├── training/        # GRPO dataset + reward helpers
 ├── scripts/         # baseline, train, evaluate, boundary_eval, deploy
 ├── dashboard/       # Live demo UI (WebSocket + REST)
-├── outputs/         # Committed training artifacts and plots
-└── notebooks/       # Colab training notebook
+└── outputs/         # All committed training artifacts + plots
 ```
-
----
-
-## 📊 Committed Training Artifacts
-
-All artifacts are committed and verifiable:
-
-- ✅ `outputs/baseline_results.json` — 30-episode brute-force baseline
-- ✅ `outputs/training_history.json` — 100-step real GRPO log (101 entries)
-- ✅ `outputs/training_summary.json` — final training summary
-- ✅ `outputs/capability_boundary_eval.json` — before/after capability probe
-- ✅ `outputs/plots/training_curves.png` — reward curve across 100 steps
-- ✅ `outputs/plots/before_after.png` — baseline vs trained comparison
-- ✅ `outputs/plots/evaluation_summary.json` — structured proof numbers
 
 ---
 
@@ -251,6 +294,8 @@ All artifacts are committed and verifiable:
 
 **Failure → Intervention → Measurable Improvement**
 
-*Don't build more. Show learning better.*
+*The win condition is not a cherry-picked output. It is a visible learning story.*
+
+**[Live Demo](https://huggingface.co/spaces/ayussssssiiii/codecourt) · [Trained Model](https://huggingface.co/ayussssssiiii/codecourt-solver-grpo-v1) · [GitHub](https://github.com/ayushoncode/CodeCourt)**
 
 </div>

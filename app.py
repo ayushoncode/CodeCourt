@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -70,6 +70,7 @@ class SessionStore:
 
 app = FastAPI(title="CodeCourt", version="1.0.0")
 app.mount("/dashboard", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")
+app.mount("/outputs", StaticFiles(directory=str(OUTPUTS_DIR), html=False), name="outputs")
 SESSIONS = SessionStore()
 
 active_connections: list[WebSocket] = []
@@ -439,18 +440,18 @@ def overview() -> JSONResponse:
     return JSONResponse(content=_build_overview())
 
 
-@app.get("/api/spec")
-def spec() -> JSONResponse:
+@app.get("/api/spec", response_class=PlainTextResponse)
+def spec() -> PlainTextResponse:
     if not OPENENV_PATH.exists():
         raise HTTPException(status_code=404, detail="openenv.yaml not found")
-    return JSONResponse(content={"openenv_yaml": OPENENV_PATH.read_text()})
+    return PlainTextResponse(OPENENV_PATH.read_text(), media_type="text/yaml")
 
 
-@app.get("/api/readme")
-def readme() -> JSONResponse:
+@app.get("/api/readme", response_class=PlainTextResponse)
+def readme() -> PlainTextResponse:
     if not README_PATH.exists():
         raise HTTPException(status_code=404, detail="README.md not found")
-    return JSONResponse(content={"readme_markdown": README_PATH.read_text()})
+    return PlainTextResponse(README_PATH.read_text(), media_type="text/markdown")
 
 
 @app.get("/api/demo")

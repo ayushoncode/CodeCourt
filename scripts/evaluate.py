@@ -270,6 +270,19 @@ def build_evaluation_summary(baseline: dict | None, trained_history: list) -> di
         trained_pass = final_record.get("reward_pass_rate")
         trained_reward = final_record.get("reward")
         trained_robustness = final_record.get("reward_robustness")
+        if trained_pass is None:
+            pass_values = [row.get("reward_pass_rate") for row in log_records if row.get("reward_pass_rate") is not None]
+            trained_pass = pass_values[-1] if pass_values else None
+        if trained_reward is None:
+            reward_values = [row.get("reward") for row in log_records if row.get("reward") is not None]
+            trained_reward = reward_values[-1] if reward_values else None
+        if trained_robustness is None:
+            robustness_values = [
+                row.get("reward_robustness")
+                for row in log_records
+                if row.get("reward_robustness") is not None
+            ]
+            trained_robustness = robustness_values[-1] if robustness_values else None
         setter_win_rate = None
     else:
         episodes = [row for row in trained_history if isinstance(row, dict) and "episode" in row]

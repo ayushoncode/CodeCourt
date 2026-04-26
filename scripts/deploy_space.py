@@ -26,6 +26,7 @@ SPACE_APP_FILES = [
     "README.md",
     "openenv.yaml",
     "requirements.txt",
+    "outputs",
     "dashboard",
     "env",
     "oracle",

@@ -83,16 +83,30 @@ class OracleExecutor:
         self.memory_limit_mb = memory_limit_mb
         self.default_language = default_language
         self._client = None
+        self._docker_checked = False
+        self._docker_available = False
 
     def _get_client(self):
         if docker is None:
             return None
+        if self._docker_checked:
+            return self._client if self._docker_available else None
+
+        self._docker_checked = True
         if self._client is None:
+            client = None
             try:
-                self._client = docker.from_env()
-                self._client.ping()
+                client = docker.from_env()
+                client.ping()
+                self._client = client
+                self._docker_available = True
             except DockerException:
+                try:
+                    client.close()
+                except Exception:
+                    pass
                 self._client = None
+                self._docker_available = False
         return self._client
 
     def _validate_language(self, language: str) -> dict:
