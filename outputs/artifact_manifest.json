@@ -11,7 +11,7 @@
       "setter_win_rate": 0.5666666666666667,
       "invalid_rate": 0.0,
       "avg_solver_pass_rate": 0.5472222222222223,
-      "avg_solver_reward": 24.762
+      "avg_solver_reward": 24.778333333333332
     }
   },
   "trained_reference": {

@@ -61,7 +61,7 @@
         "stdout": "-1",
         "stderr": "",
         "expected_output": "0",
-        "execution_time": 0.03035593032836914
+        "execution_time": 0.026433944702148438
       },
       {
         "case_id": "graph_shortest_path_two_hop",
@@ -75,7 +75,7 @@
         "stdout": "-1",
         "stderr": "",
         "expected_output": "9",
-        "execution_time": 0.023676156997680664
+        "execution_time": 0.02499103546142578
       },
       {
         "case_id": "graph_bipartite_min_odd_cycle",
@@ -89,7 +89,7 @@
         "stdout": "YES",
         "stderr": "",
         "expected_output": "NO",
-        "execution_time": 0.02356886863708496
+        "execution_time": 0.025180816650390625
       },
       {
         "case_id": "array_lis_hidden_valley",
@@ -103,7 +103,7 @@
         "stdout": "2",
         "stderr": "",
         "expected_output": "3",
-        "execution_time": 0.023280858993530273
+        "execution_time": 0.025689125061035156
       },
       {
         "case_id": "dp_lcs_order_sensitive",
@@ -117,7 +117,7 @@
         "stdout": "2",
         "stderr": "",
         "expected_output": "1",
-        "execution_time": 0.023756742477416992
+        "execution_time": 0.025537967681884766
       },
       {
         "case_id": "dp_lcs_repeated_chars",
@@ -131,7 +131,7 @@
         "stdout": "2",
         "stderr": "",
         "expected_output": "2",
-        "execution_time": 0.02333688735961914
+        "execution_time": 0.024872779846191406
       }
     ]
   },
@@ -153,7 +153,7 @@
         "stdout": "0",
         "stderr": "",
         "expected_output": "0",
-        "execution_time": 0.024199962615966797
+        "execution_time": 0.026266098022460938
       },
       {
         "case_id": "graph_shortest_path_two_hop",
@@ -167,7 +167,7 @@
         "stdout": "9",
         "stderr": "",
         "expected_output": "9",
-        "execution_time": 0.024346113204956055
+        "execution_time": 0.02741384506225586
       },
       {
         "case_id": "graph_bipartite_min_odd_cycle",
@@ -181,7 +181,7 @@
         "stdout": "NO",
         "stderr": "",
         "expected_output": "NO",
-        "execution_time": 0.027395248413085938
+        "execution_time": 0.025579214096069336
       },
       {
         "case_id": "array_lis_hidden_valley",
@@ -195,7 +195,7 @@
         "stdout": "3",
         "stderr": "",
         "expected_output": "3",
-        "execution_time": 0.02493000030517578
+        "execution_time": 0.026404142379760742
       },
       {
         "case_id": "dp_lcs_order_sensitive",
@@ -209,7 +209,7 @@
         "stdout": "1",
         "stderr": "",
         "expected_output": "1",
-        "execution_time": 0.02306675910949707
+        "execution_time": 0.026006698608398438
       },
       {
         "case_id": "dp_lcs_repeated_chars",
@@ -223,7 +223,7 @@
         "stdout": "2",
         "stderr": "",
         "expected_output": "2",
-        "execution_time": 0.023571014404296875
+        "execution_time": 0.02581787109375
       }
     ]
   }
