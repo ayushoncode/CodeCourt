@@ -99,7 +99,7 @@ Real software infrastructure doesn't fail on known problems. It fails on:
 
 > The spike to **+34.31** is the key signal: when the model generates a complete solution, it *can* pass hidden adversarial tests. The environment reward design is correct — the bottleneck is generation length, not learning.
 
-![Before vs After](outputs/plots/training_curves1.png)
+![Before vs After](outputs/plots/before_after.png)
 
 ---
 
